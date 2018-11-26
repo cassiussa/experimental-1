@@ -117,7 +117,7 @@ function ensureAdminUserExist() {
     return
   else 
     echo "Creating new user: ${THIS_USER}"
-    createAdminUser ${THIS_USER} "some full name here"
+    createAdminUser "${THIS_USER}" "some full name here"
     CREATE_ADMIN_USER_RESPONSE=$?
     [[ ${CREATE_ADMIN_USER_RESPONSE} ]] && echo "Created admin user '${THIS_USER}'"; return || errorExit "Unable to create user ${THIS_USER}"
   fi
@@ -146,7 +146,7 @@ function ensureAdminGroupExists() {
     return
   else
     echo "Creating new group: ${THIS_ADMIN_GROUP}"
-    createAdminGroup ${THIS_ADMIN_GROUP}
+    createAdminGroup "${THIS_ADMIN_GROUP}"
     CREATE_ADMIN_GROUP_RESPONSE=$?
     [[ ${CREATE_ADMIN_GROUP_RESPONSE} ]] && echo "Created admin group '${THIS_ADMIN_GROUP}'"; return || errorExit "Unable to create group ${THIS_ADMIN_GROUP}"
   fi
@@ -163,21 +163,28 @@ function createProject() {
   THIS_DEPLOYMENT_ENVIRONMENT=${2}
   THIS_DISPLAY_NAME=${3}
   THIS_DESCRIPTION=${4}
-  COMMAND="oc new-project ${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT} --description='${THIS_DESCRIPTION}' --display-name='${THIS_DISPLAY_NAME} - ${THIS_DEPLOYMENT_ENVIRONMENT}'"
+  COMMAND="oc new-project ${THIS_PROJECT_NAME,,}-${THIS_DEPLOYMENT_ENVIRONMENT,,} --description='${THIS_DESCRIPTION}' --display-name='${THIS_DISPLAY_NAME} - ${THIS_DEPLOYMENT_ENVIRONMENT^^}'"
   eval ${COMMAND} > /dev/null && return
 }
 
 # CREATE NEW PROJECT
 function ensureProjectExists() {
   echo "function ensureProjectExists"
-  THIS_DEPLOYMENT_ENVIRONMENT="${1}"
-  THIS_PROJECT_NAME="${2}"
-  THIS_DISPLAY_NAME="${3}"
-  THIS_DESCRIPTION="${THIS_DEPLOYMENT_ENVIRONMENT} environment for the \"${THIS_DISPLAY_NAME}\" Project.'"
+  unset THIS_DEPLOYMENT_ENVIRONMENT
+  unset THIS_DISPLAY_NAME
+  unset THIS_DESCRIPTION
+  THIS_DEPLOYMENT_ENVIRONMENT=${1}
+  THIS_PROJECT_NAME=${2}
+  THIS_DISPLAY_NAME=${3}
+  THIS_DESCRIPTION="${THIS_DEPLOYMENT_ENVIRONMENT^^} environment for the \"${THIS_DISPLAY_NAME}\" Project."
   # Make the PROD environment in CAPITAL letters to distiguish it visually from other environments
-  [ "${THIS_DEPLOYMENT_ENVIRONMENT}" == "prod" ] && THIS_DESCRIPTION="${THIS_DESCRIPTION^^}"
+  if [ "${THIS_DEPLOYMENT_ENVIRONMENT}" == "prod" ]; then
+    THIS_DEPLOYMENT_ENVIRONMENT="${THIS_DEPLOYMENT_ENVIRONMENT^^}"
+    THIS_DISPLAY_NAME="${THIS_DISPLAY_NAME^^}"
+    THIS_DESCRIPTION="${THIS_DESCRIPTION^^}"
+  fi
 
-  POLL_FOR_PROJECT="oc get project ${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT}"
+  POLL_FOR_PROJECT="oc get project ${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT,,}"
   echo "Verify the '${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT}' Project exist.  If not, create it"
   retryCommand "1" "3" "${POLL_FOR_PROJECT}"
   POLL_FOR_PROJECT_RESPONSE=$?
@@ -185,18 +192,18 @@ function ensureProjectExists() {
     echo "The Project '${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT}' already exists"
     return
   else
-    echo "Creating new Project: ${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT}"
-    createProject ${THIS_PROJECT_NAME} ${THIS_DEPLOYMENT_ENVIRONMENT} ${THIS_DISPLAY_NAME} ${THIS_DESCRIPTION}
+    echo "Creating new Project: ${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT,,}"
+    echo "createProject ${THIS_PROJECT_NAME} ${THIS_DEPLOYMENT_ENVIRONMENT,,} ${THIS_DISPLAY_NAME} ${THIS_DESCRIPTION}"
+    createProject "${THIS_PROJECT_NAME}" "${THIS_DEPLOYMENT_ENVIRONMENT,,}" "${THIS_DISPLAY_NAME}" "${THIS_DESCRIPTION}"
     CREATE_PROJECT_RESPONSE=$?
-    [[ ${CREATE_PROJECT_RESPONSE} ]] && echo "Created Project '${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT}'"; return || errorExit "Unable to create the Project.  Please contact support and provide Error Code #395."
+    [[ ${CREATE_PROJECT_RESPONSE} ]] && echo "Created Project '${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT,,}'"; return || errorExit "Unable to create the Project.  Please contact support and provide Error Code #395."
   fi
 }
 
 
 
 function ensureAdminGroupPermissions() {
-  echo "ensureAdminGroupPermissions"
-  ocLogin
+  echo "function ensureAdminGroupPermissions"
   unset COMMAND
   THIS_DEPLOYMENT_ENVIRONMENT="${1}"
   THIS_PROJECT_NAME="${2}"
@@ -216,16 +223,16 @@ function ensureAdminGroupPermissions() {
 
 
 if [[ "${ENABLE_DEV}" == true ]]; then
-  ensureProjectExists "dev" ${PROJECT_NAME} ${DISPLAY_NAME}
-  ensureAdminGroupPermissions "dev" ${PROJECT_NAME} ${ADMIN_GROUP}
+  ensureProjectExists "dev" "${PROJECT_NAME}" "${DISPLAY_NAME}"
+  ensureAdminGroupPermissions "dev" "${PROJECT_NAME}" "${ADMIN_GROUP}"
 fi
 if [[ "${ENABLE_QA}" == true ]]; then
-  ensureProjectExists "qa" ${PROJECT_NAME} ${DISPLAY_NAME}
-  ensureAdminGroupPermissions "qa" ${PROJECT_NAME} ${ADMIN_GROUP}
+  ensureProjectExists "qa" "${PROJECT_NAME}" "${DISPLAY_NAME}"
+  ensureAdminGroupPermissions "qa" "${PROJECT_NAME}" "${ADMIN_GROUP}"
 fi
 if [[ "${ENABLE_PROD}" == true ]]; then
-  ensureProjectExists "prod" ${PROJECT_NAME} ${DISPLAY_NAME}
-  ensureAdminGroupPermissions "prod" ${PROJECT_NAME} ${ADMIN_GROUP}
+  ensureProjectExists "prod" "${PROJECT_NAME}" "${DISPLAY_NAME}"
+  ensureAdminGroupPermissions "prod" "${PROJECT_NAME}" "${ADMIN_GROUP}"
 fi
 
 
