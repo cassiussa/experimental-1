@@ -5,7 +5,7 @@ ID="${1}"
 # Code #395 : Could not create Project or cannot connect to the cluster via the 'oc' command.  The user account may also have gotten logged out.
 # Code #394 : Could not log into the cluster using the oc command
 
-DISPLAY_NAME="Tester    Project a"
+DISPLAY_NAME="Tester Project C"
 # Change to lower case
 ORIGNAL_PROJECT_NAME="${DISPLAY_NAME,,}"
 # Temporarily generate a random customer ID
@@ -14,6 +14,7 @@ CUSTOMER_ID="${ID}"
 PROJECT_NAME="${CUSTOMER_ID}-${ORIGNAL_PROJECT_NAME}"
 # Replace spaces with -
 PROJECT_NAME="$(echo ${PROJECT_NAME} | sed 's/ \+/-/g')"
+ORIGNAL_PROJECT_NAME="$(echo ${ORIGNAL_PROJECT_NAME} | sed 's/ \+/-/g')"
 
 
 ### Account-level groups and accounts
@@ -65,6 +66,10 @@ function errorExit () {
 }
 
 
+function debug() {
+  eval "${1}"
+}
+# EXAMPLE: debug "echo \"here it is\""
 
 
 # LOGIN TO CLUSTER
@@ -83,7 +88,10 @@ function retryCommand() {
     # Log into the cluster
     ocLogin
     # Run the command ${3} parameter.  If it succeeds, return from function.  Otherwise echo failed and then retry ${1} number of times
-    eval ${3} > /dev/null 2>&1 && return 
+    #eval ${3} > /dev/null 2>&1 && return 
+    #debug "eval ${3} > /dev/null 2>&1 && return"
+    #debug "echo \"${3} <---- here\""
+    eval ${3} && return
     #echo "Attempt ${retries} of ${1} failed to create '${3}'."
     [[ "${retries}" > 1 ]] && echo "Trying again in ${2} seconds"
     sleep ${2}
@@ -93,9 +101,6 @@ function retryCommand() {
   done
 }
 
-
-
-
 function createAdminUser() {
   ocLogin
   unset COMMAND
@@ -103,17 +108,26 @@ function createAdminUser() {
   THIS_FULL_NAME=${2}
   COMMAND="oc create user ${THIS_ADMIN_USER} --full-name=\"${THIS_FULL_NAME}\""
   eval ${COMMAND} > /dev/null && return
+#  COMMAND="oc label user ${THIS_ADMIN_USER} customerid=${CUSTOMER_ID}"
+#  retryCommand "1" "3" "${COMMAND}"
+#  POLL_FOR_USER_RESPONSE=$?
+#  if [[ "${POLL_FOR_USER_RESPONSE}" == 0 ]]; then
+#    errorExit "Error Code #393 - failed to label user."
+#  else
+#    echo "Labeled user"
+#  fi
 }
 
+
 function ensureAdminUserExist() {
-  echo "function ensureAdminUserExist"
+  #echo "function ensureAdminUserExist"
   THIS_USER="${1}"
   POLL_FOR_USER="oc get user ${THIS_USER}"
-  echo "See if admin  user exists.  If not, create it"
+  #echo "See if admin  user exists.  If not, create it"
   retryCommand "1" "3" "${POLL_FOR_USER}"
   POLL_FOR_USER_RESPONSE=$?
   if [[ "${POLL_FOR_USER_RESPONSE}" == 0 ]]; then
-    echo "The admin user '${THIS_USER}' already exists"
+    echo "The admin user '${THIS_USER}' already exists. Skipping..."
     return
   else 
     echo "Creating new user: ${THIS_USER}"
@@ -123,7 +137,24 @@ function ensureAdminUserExist() {
   fi
 }
 
-ensureAdminUserExist ${ADMIN_USER}
+
+function labelObject() {
+  THIS_OBJECT_TYPE="${1}"
+  THIS_OBJECT="${2}"
+  THIS_KEY="${3}"
+  THIS_VALUE="${4}"
+  # ex: oc label <user> <username> <customerid>=<123111> --overwrite=true
+  COMMAND="oc label ${THIS_OBJECT_TYPE} ${THIS_OBJECT} ${THIS_KEY}=${THIS_VALUE} --overwrite=true"
+  retryCommand "1" "3" "${COMMAND}"
+  COMMAND_RESPONSE=$?
+  if [[ "${COMMAND_RESPONSE}" == 0 ]]; then
+    echo "Labeled ${THIS_OBJECT_TYPE}"
+  else
+    errorExit "Error Code #393 - failed to label user."
+  fi
+}
+
+
 
 function createAdminGroup() {
   ocLogin
@@ -135,24 +166,22 @@ function createAdminGroup() {
 
 
 function ensureAdminGroupExists() {
-  echo "function ensureAdminGroupExists"
-  THIS_ADMIN_GROUP="${1}"
-  POLL_FOR_GROUP="oc get group ${THIS_ADMIN_GROUP}"
-  echo "Verify the admin group exist.  If not, create it"
+  #echo "function ensureAdminGroupExists"
+  THIS_GROUP="${1}"
+  POLL_FOR_GROUP="oc get group ${THIS_GROUP}"
+  #echo "Verify the admin group exist.  If not, create it"
   retryCommand "1" "3" "${POLL_FOR_GROUP}"
   POLL_FOR_GROUP_RESPONSE=$?
   if [[ "${POLL_FOR_GROUP_RESPONSE}" == 0 ]]; then
-    echo "The admin group '${THIS_ADMIN_GROUP}' already exists"
+    echo "The admin group '${THIS_GROUP}' already exists. Skipping..."
     return
   else
-    echo "Creating new group: ${THIS_ADMIN_GROUP}"
-    createAdminGroup "${THIS_ADMIN_GROUP}"
-    CREATE_ADMIN_GROUP_RESPONSE=$?
-    [[ ${CREATE_ADMIN_GROUP_RESPONSE} ]] && echo "Created admin group '${THIS_ADMIN_GROUP}'"; return || errorExit "Unable to create group ${THIS_ADMIN_GROUP}"
+    echo "Creating new group: ${THIS_GROUP}"
+    createAdminGroup "${THIS_GROUP}"
+    CREATE_GROUP_RESPONSE=$?
+    [[ ${CREATE_GROUP_RESPONSE} ]] && echo "Created admin group '${THIS_GROUP}'"; return || errorExit "Unable to create group ${THIS_GROUP}"
   fi
 }
-
-ensureAdminGroupExists ${ADMIN_GROUP}
 
 
 
@@ -169,7 +198,7 @@ function createProject() {
 
 # CREATE NEW PROJECT
 function ensureProjectExists() {
-  echo "function ensureProjectExists"
+  #echo "function ensureProjectExists"
   unset THIS_DEPLOYMENT_ENVIRONMENT
   unset THIS_DISPLAY_NAME
   unset THIS_DESCRIPTION
@@ -185,15 +214,15 @@ function ensureProjectExists() {
   fi
 
   POLL_FOR_PROJECT="oc get project ${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT,,}"
-  echo "Verify the '${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT}' Project exist.  If not, create it"
+  #echo "Verify the '${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT}' Project exist.  If not, create it"
   retryCommand "1" "3" "${POLL_FOR_PROJECT}"
   POLL_FOR_PROJECT_RESPONSE=$?
   if [[ "${POLL_FOR_PROJECT_RESPONSE}" == 0 ]]; then
-    echo "The Project '${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT}' already exists"
+    echo "The Project '${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT}' already exists.  Skipping..."
     return
   else
     echo "Creating new Project: ${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT,,}"
-    echo "createProject ${THIS_PROJECT_NAME} ${THIS_DEPLOYMENT_ENVIRONMENT,,} ${THIS_DISPLAY_NAME} ${THIS_DESCRIPTION}"
+    #echo "createProject ${THIS_PROJECT_NAME} ${THIS_DEPLOYMENT_ENVIRONMENT,,} ${THIS_DISPLAY_NAME} ${THIS_DESCRIPTION}"
     createProject "${THIS_PROJECT_NAME}" "${THIS_DEPLOYMENT_ENVIRONMENT,,}" "${THIS_DISPLAY_NAME}" "${THIS_DESCRIPTION}"
     CREATE_PROJECT_RESPONSE=$?
     [[ ${CREATE_PROJECT_RESPONSE} ]] && echo "Created Project '${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT,,}'"; return || errorExit "Unable to create the Project.  Please contact support and provide Error Code #395."
@@ -201,16 +230,17 @@ function ensureProjectExists() {
 }
 
 
-
 function ensureAdminGroupPermissions() {
-  echo "function ensureAdminGroupPermissions"
+  #echo "function ensureAdminGroupPermissions"
   unset COMMAND
   THIS_DEPLOYMENT_ENVIRONMENT="${1}"
   THIS_PROJECT_NAME="${2}"
   THIS_ADMIN_GROUP="${3}"
-  echo "Set permissions for the '${THIS_ADMIN_GROUP}' Group"
+  echo "Set permissions for Group: '${THIS_ADMIN_GROUP}'"
   COMMAND="oc adm policy add-role-to-group admin ${THIS_ADMIN_GROUP} -n ${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT}"
-  retryCommand "1" "3" ${COMMAND}
+  #debug "echo \"##################\""
+  retryCommand "1" "3" "${COMMAND}"
+  #debug "echo \"##################################\""
   COMMAND_RESPONSE=$?
   if [[ "${COMMAND_RESPONSE}" == 0 ]]; then
     echo "Added administrative permissions to the '${THIS_ADMIN_GROUP}' Group on the '${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT}' Project"
@@ -222,23 +252,113 @@ function ensureAdminGroupPermissions() {
 
 
 
+function addUserToGroup() {
+  #echo "function addUserToGroup"
+  unset COMMAND
+  unset COMMAND_RESPONSE
+  THIS_GROUP=${1}
+  THIS_USER=${2}
+  echo "Adding the ${THIS_USER} user to the '${THIS_GROUP}' Group"
+  COMMAND="oc adm groups add-users ${THIS_GROUP} ${THIS_USER}"
+  echo "${COMMAND}"
+  retryCommand "1" "3" "${COMMAND}"
+  COMMAND_RESPONSE=$?
+  if [[ "${COMMAND_RESPONSE}" == 0 ]]; then
+    echo "Added ${THIS_USER} to the '${THIS_GROUP}' Group"
+    return
+  else
+    errorExit "Failed to add ${THIS_USER} to the '${THIS_GROUP}' Group"
+  fi
+}
+
+
+
+
+ensureAdminUserExist ${ADMIN_USER}
+labelObject "user" "${ADMIN_USER}" "customerid" "${CUSTOMER_ID}"
+
+
+ensureAdminGroupExists ${ADMIN_GROUP}
+labelObject "group" "${ADMIN_GROUP}" "customerid" "${CUSTOMER_ID}"
+ensureAdminGroupExists ${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}
+labelObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
+
+
+
 if [[ "${ENABLE_DEV}" == true ]]; then
   ensureProjectExists "dev" "${PROJECT_NAME}" "${DISPLAY_NAME}"
   ensureAdminGroupPermissions "dev" "${PROJECT_NAME}" "${ADMIN_GROUP}"
+  ensureAdminGroupExists ${DEV_GROUP}
+  ensureAdminGroupPermissions "dev" "${PROJECT_NAME}" "${DEV_GROUP}"
+  ensureAdminGroupExists ${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}
+  ensureAdminGroupPermissions "dev" "${PROJECT_NAME}" "${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}"
+
+  # Grant admin access to the application-level admin group (ex: dev, qa and prod)
+  ensureAdminGroupPermissions "dev" "${PROJECT_NAME}" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}"
+
+  # LABELS
+  labelObject "namespace" "${PROJECT_NAME}-dev" "customerid" "${CUSTOMER_ID}"
+  labelObject "namespace" "${PROJECT_NAME}-dev" "deployment_environment" "development"
+  labelObject "group" "${DEV_GROUP}" "customerid" "${CUSTOMER_ID}"
+  labelObject "group" "${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
+
+#  addUserToGroup "${DEV_GROUP}" "${ADMIN_USER}"
+#  addUserToGroup "${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}" "${ADMIN_USER}"
 fi
+
+debug "echo \"================================================\""
+
 if [[ "${ENABLE_QA}" == true ]]; then
   ensureProjectExists "qa" "${PROJECT_NAME}" "${DISPLAY_NAME}"
   ensureAdminGroupPermissions "qa" "${PROJECT_NAME}" "${ADMIN_GROUP}"
+  ensureAdminGroupExists ${QA_GROUP}
+  ensureAdminGroupPermissions "qa" "${PROJECT_NAME}" "${QA_GROUP}"
+  ensureAdminGroupExists ${QA_GROUP}-${ORIGNAL_PROJECT_NAME}
+  ensureAdminGroupPermissions "qa" "${PROJECT_NAME}" "${QA_GROUP}-${ORIGNAL_PROJECT_NAME}"
+
+  # Grant admin access to the application-level admin group (ex: dev, qa and prod)
+  ensureAdminGroupPermissions "qa" "${PROJECT_NAME}" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}"
+
+  # LABELS
+  labelObject "namespace" "${PROJECT_NAME}-qa" "customerid" "${CUSTOMER_ID}"
+  labelObject "namespace" "${PROJECT_NAME}-qa" "deployment_environment" "quality-assurance"
+  labelObject "group" "${QA_GROUP}" "customerid" "${CUSTOMER_ID}"
+  labelObject "group" "${QA_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
+
 fi
+
+debug "echo \"================================================\""
+
 if [[ "${ENABLE_PROD}" == true ]]; then
   ensureProjectExists "prod" "${PROJECT_NAME}" "${DISPLAY_NAME}"
   ensureAdminGroupPermissions "prod" "${PROJECT_NAME}" "${ADMIN_GROUP}"
+  ensureAdminGroupExists ${PROD_GROUP}
+  ensureAdminGroupPermissions "prod" "${PROJECT_NAME}" "${PROD_GROUP}"
+  ensureAdminGroupExists ${PROD_GROUP}-${ORIGNAL_PROJECT_NAME}
+  ensureAdminGroupPermissions "prod" "${PROJECT_NAME}" "${PROD_GROUP}-${ORIGNAL_PROJECT_NAME}"
+
+  # Grant admin access to the application-level admin group (ex: dev, qa and prod)
+  ensureAdminGroupPermissions "prod" "${PROJECT_NAME}" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}"
+
+  # LABELS
+  labelObject "namespace" "${PROJECT_NAME}-prod" "customerid" "${CUSTOMER_ID}"
+  labelObject "namespace" "${PROJECT_NAME}-prod" "deployment_environment" "production"
+  labelObject "group" "${PROD_GROUP}" "customerid" "${CUSTOMER_ID}"
+  labelObject "group" "${PROD_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
+
 fi
 
+debug "echo \"================================================\""
+debug "echo \"================================================\""
+
+# Add Users
+addUserToGroup "${ADMIN_GROUP}" "${ADMIN_USER}"
+addUserToGroup "${PROJECT_ADMIN_GROUP}" "${ADMIN_USER}"
 
 
 
 
+echo "DONE DONE DONE"
 
 exit 1
 
