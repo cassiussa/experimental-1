@@ -2,7 +2,7 @@ FROM centos7
 
 LABEL Maintainer="Cassius John-Adams <cassius.s.adams@gmail.com>"
 
-ENV HOME /var/www/html/ KUBECONFIG ~/.kube/config
+ENV HOME /var/www/html/ KUBECONFIG /var/www/html/.kube/config
 
 # Install Apache webserver, no docs, then cleanup right away
 RUN yum install httpd wget -y && \
