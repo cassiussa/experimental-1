@@ -1,0 +1,203 @@
+#!/bin/bash
+
+############################################################
+#                                                          #
+#                                                          #
+#  Cassius John-Adams <cassius.s.adams@gmail.com>          #
+#                                                          #
+#  November 2018                                           #
+#                                                          #
+############################################################
+
+
+# ENDPOINT      : envirment variable populated by DeploymentConfig
+# HTPASSWD_FILE : envirment variable populated by DeploymentConfig
+# HTPASSWD_PATH : envirment variable populated by DeploymentConfig
+
+. account_setup.sh
+
+function groupFromConfigMap() {
+  OIFS=$IFS;
+  IFS="|";
+  OCP_GROUP=(${OCP_GROUPS});
+  PRETTY_NAME_GROUPS=(${PRETTY_NAME_GROUPS});
+  IFS=$OIFS;
+}
+
+# Store POST data
+function cgi_get_POST_vars() {
+  # Test the content type
+  [ "${CONTENT_TYPE}" != "application/x-www-form-urlencoded" ] && echo "Warning: it might make sense to use MIME type application/x-www-form-urlencoded!" 1>&2
+  # Make sure to save POST variables the first time
+  [ -z "${QUERY_STRING_POST}" -a "${REQUEST_METHOD}" = "POST" -a ! -z "${CONTENT_LENGTH}" ] && read -n ${CONTENT_LENGTH} QUERY_STRING_POST
+  return
+}
+
+# Decode urlencoded strings
+function cgi_decodevar() {
+  [ $# -ne 1 ] && return
+  local v t h
+  # replace all + with whitespace and append %%
+  t="${1//+/ }%%"
+  while [ ${#t} -gt 0 -a "${t}" != "%" ]; do
+  v="${v}${t%%\%*}" # digest up to the first %
+  t="${t#*%}" # remove digested part
+  # decode if there is anything to decode and if not at end of string
+  if [ ${#t} -gt 0 -a "${t}" != "%" ]; then
+    h=${t:0:2} # save first two chars
+    t="${t:2}" # remove these
+     v="${v}"`echo -e \\\\x${h}` # convert hex to special char
+  fi
+  done
+  # return decoded string
+  echo "${v}"
+  return
+}
+
+# Function to get variables from http requests
+# usage: cgi_getvars method varname1 [.. varnameN]
+# method is either GET or POST or BOTH
+# the magic varible name ALL gets everything
+function cgi_getvars() {
+  [ $# -lt 2 ] && return
+  local q p k v s
+  # get query
+  case $1 in
+  GET)
+    [ ! -z "${QUERY_STRING}" ] && q="${QUERY_STRING}&"
+    ;;
+  POST)
+    cgi_get_POST_vars
+    [ ! -z "${QUERY_STRING_POST}" ] && q="${QUERY_STRING_POST}&"
+    ;;
+  BOTH)
+    [ ! -z "${QUERY_STRING}" ] && q="${QUERY_STRING}&"
+    cgi_get_POST_vars
+    [ ! -z "${QUERY_STRING_POST}" ] && q="${q}${QUERY_STRING_POST}&"
+    ;;
+  esac
+  shift
+  s=" $* "
+  # parse the query data
+  while [ ! -z "$q" ]; do
+  p="${q%%&*}"  # get first part of query string
+  k="${p%%=*}"  # get the key (variable name) from it
+  v="${p#*=}"   # get the value from it
+  q="${q#$p&*}" # strip first part from query string
+  # decode and evaluate var if requested
+  [ "$1" = "ALL" -o "${s/ $k /}" != "$s" ] && \
+    eval "$k=\"`cgi_decodevar \"$v\"`\""
+  done
+  return
+}
+
+
+
+
+
+
+echo "Content-type: text/html"
+echo ""
+echo "<!DOCTYPE html>"
+
+echo "<html class=\"login-pf\"><head><title>Project Creator</title>"
+cat style.css
+echo "</head>"
+echo "<body>"
+echo "<div class=\"container\">"
+echo "<div class=\"row\">"
+echo "<h1>Project Creator (alpha)</h1>"
+echo "This is where you can create a new Project.<br /><br />"
+echo "- Fill out all 4 fields as expected<br />"
+
+
+
+# Register all GET and POST variables based on the name given to their HTML form elements
+cgi_getvars BOTH ALL
+
+
+  # We haven't hit submit, so present the main form page
+if [ -z "${QUERY_STRING_POST}" ]; then
+  
+  echo "<div class=\"col-sm-7 col-md-6 col-lg-5 login\">"
+  echo "<form class=\"form-horizontal\" role=\"form\" action=\"/\" method=\"post\">"
+  
+
+  echo "<div class=\"form-group\">"
+  echo "<label for=\"customerid\" class=\"col-sm-6 col-md-6 control-label\">Enter your CustomerID (ex: 124189) </label>"
+  echo "<div class=\"col-sm-10 col-md-10\">"
+  echo "<input type=\"text\" name=\"customerid\" class=\"form-control\" id=\"customerid\" placeholder=\"\" tabindex=\"1\" autofocus=\"autofocus\"></input><br />"
+  echo "</div></div>"
+
+  echo "<div class=\"form-group\">"
+  echo "<label for=\"projectname\" class=\"col-sm-6 col-md-6 control-label\">Name for the Project</label>"
+  echo "<div class=\"col-sm-10 col-md-10\">"
+  echo "<input type=\"text\" name=\"projectname\" class=\"form-control\" id=\"projectname\" placeholder=\"\" tabindex=\"1\" autofocus=\"autofocus\" ></input><br />"
+  echo "</div></div>"
+  
+  echo "<div class=\"form-group\">"
+  echo "<label for=\"password\" class=\"col-sm-6 col-md-6 control-label\">Password</label>"
+  echo "<div class=\"col-sm-10 col-md-10\">"
+  echo "<input type=\"password\" name=\"password\" class=\"form-control\" id=\"password\" placeholder=\"\" tabindex=\"1\" autofocus=\"autofocus\" ></input><br />"
+  echo "</div></div>"
+
+
+  echo "<div class=\"form-group\">"
+  echo "<label for=\"devenvironment\" class=\"col-sm-6 col-md-6 control-label\">Dev enviroment? (either 'true' or 'false' for now)</label>"
+  echo "<div class=\"col-sm-10 col-md-10\">"
+  echo "<input type=\"text\" name=\"devenvironment\" class=\"form-control\" id=\"devenvironment\" placeholder=\"\" tabindex=\"1\" autofocus=\"autofocus\" ></input><br />"
+  echo "</div></div>"
+
+  echo "<div class=\"form-group\">"
+  echo "<label for=\"qaenvironment\" class=\"col-sm-6 col-md-6 control-label\">QA enviroment? (either 'true' or 'false' for now)</label>"
+  echo "<div class=\"col-sm-10 col-md-10\">"
+  echo "<input type=\"text\" name=\"qaenvironment\" class=\"form-control\" id=\"qaenvironment\" placeholder=\"\" tabindex=\"1\" autofocus=\"autofocus\" ></input><br />"
+  echo "</div></div>"
+
+  echo "<div class=\"form-group\">"
+  echo "<label for=\"prodenvironment\" class=\"col-sm-6 col-md-6 control-label\">Production enviroment? (either 'true' or 'false' for now)</label>"
+  echo "<div class=\"col-sm-10 col-md-10\">"
+  echo "<input type=\"text\" name=\"prodenvironment\" class=\"form-control\" id=\"prodenvironment\" placeholder=\"\" tabindex=\"1\" autofocus=\"autofocus\" ></input><br />"
+  echo "</div></div>"
+
+
+
+  echo "<div class=\"form-group\">"
+  echo "<div class=\"col-xs-8 col-sm-offset-2 col-sm-6 col-md-offset-2 col-md-6\">"
+  echo ""
+  echo "</div>"
+  echo "<div class=\"col-xs-4 col-sm-4 col-md-4 submit\">"
+  echo "<button type=\"submit\" class=\"btn btn-primary btn-lg\" tabindex=\"4\">Submit</button>"
+  #echo "<input type=\"submit\" name=\"sub\" value=\"Submit\"></input>"
+  echo "</div></div>"
+  echo "</form>"
+  
+  echo "</div>"
+
+# submit was clicked
+else
+
+  
+  # Test run...
+  COMMAND="bash account_setup.sh ${customerid} \"${projectname}\" ${devenvironment} ${qaenvironment} ${prodenvironment"
+  eval ${COMMAND} > /dev/null 2>&1
+  PROCESS_RESPONSE=$?
+
+  if [[ "${PROCESS_RESPONSE}" == 0 ]]; then
+    # We've created the projects, accounts, groups, etc
+    echo "It worked... <br />"
+    echo "Here are the logs: <br /><br /><br />"
+    echo "<pre>${PROCESS}</pre>"
+  else
+    echo "An unknown error has occurred.  Please contact someone - anyone - if you continue to see this error<br />"
+    echo "Response was...<br />${PROCESS}<br /><br />"
+  fi
+
+  echo "<br /><br />"
+fi
+
+
+echo "</div>"
+echo "</div>"
+echo "</body></html>"
+

@@ -1,11 +1,23 @@
 #!/bin/bash
 
+# Customer ID
 ID="${1}"
+# Name of the Project (namespace)
+DISPLAY_NAME="${2}"
+# Configure a Development environment for the Project?
+ENABLE_DEV=${3}
+# Configure a QA environment for the Project?
+ENABLE_QA=${4}
+# Configure a Production environment for the Project?
+ENABLE_PROD=${5}
+
+FORMAT="Incorrect invocation of the 'account_setup' script.  :  account_setup.sh <customer_id> \"<name of the Project>\" <enable DEV? (options: true, false)> <enable QA? (options: true, false)> <enable PROD? (options: true, false)>"
+
 # ERROR CODES
 # Code #395 : Could not create Project or cannot connect to the cluster via the 'oc' command.  The user account may also have gotten logged out.
 # Code #394 : Could not log into the cluster using the oc command
 
-DISPLAY_NAME="Tester Project C"
+#DISPLAY_NAME="Ocelot Application Example"
 # Change to lower case
 ORIGNAL_PROJECT_NAME="${DISPLAY_NAME,,}"
 # Temporarily generate a random customer ID
@@ -53,10 +65,6 @@ echo
 echo
 
 
-ENABLE_DEV=${2}
-ENABLE_QA=${3}
-ENABLE_PROD=${4}
-
 
 
 unset DEPLOYMENT_ENVIRONMENT
@@ -73,6 +81,12 @@ function debug() {
 }
 # EXAMPLE: debug "echo \"here it is\""
 
+
+[ -z "${ID}" ] && errorExit "${FORMAT}"
+[ -z "${DISPLAY_NAME}" ] && errorExit "${FORMAT}"
+[ -z "${ENABLE_DEV}" ] && errorExit "${FORMAT}"
+[ -z "${ENABLE_QA}" ] && errorExit "${FORMAT}"
+[ -z "${ENABLE_PROD}" ] && errorExit "${FORMAT}"
 
 if [[ "${ENABLE_DEV}" == "false" && "${ENABLE_QA}" == "false" && "${ENABLE_PROD}" == "false" ]]; then
   errorExit "No projects will be created.  You must create at least 1 project"

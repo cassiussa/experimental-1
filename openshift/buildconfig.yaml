@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  annotations:
+  labels:
+    app: accounts
+  name: accounts
+spec:
+  failedBuildsHistoryLimit: 2
+  output:
+    to:
+      kind: ImageStreamTag
+      name: accounts:latest
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    git:
+      uri: https://github.com/cassiussa/experimental-1.git
+    type: Git
+  strategy:
+    dockerStrategy:
+      from:
+        kind: ImageStreamTag
+        name: centos7:latest
+    type: Docker
+  successfulBuildsHistoryLimit: 2
+  triggers:
