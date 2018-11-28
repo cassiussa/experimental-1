@@ -23,6 +23,7 @@ spec:
       from:
         kind: DockerImage
         name: centos:7
+      noCache: true
     type: Docker
   successfulBuildsHistoryLimit: 2
   triggers:
