@@ -8,7 +8,7 @@ RUN yum install httpd -y && \
 
 # Copy the index.html file (a bash script) and css style into the cgi-bin
 COPY ["index.html", "style.css", "/var/www/cgi-bin/"]
-COPY ["account_setup.sh", "/var/www/cgi-bin/"
+COPY ["account_setup.sh", "/var/www/cgi-bin/"]
 
 # Perform some updates to the httpd.conf, set up ownerships, and push logs to stdout and stderr
 RUN sed -i "s/#AddHandler cgi-script .cgi/AddHandler cgi-script .html/g" /etc/httpd/conf/httpd.conf && \
