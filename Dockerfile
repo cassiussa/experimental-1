@@ -24,8 +24,9 @@ RUN sed -i "s/#AddHandler cgi-script .cgi/AddHandler cgi-script .html/g" /etc/ht
     mv openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit/oc /usr/local/bin && \
     mv openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit/kubectl /usr/local/bin && \
     rm -rf openshift-origin-client-tools-v3.11.0-0cbc58b-linux-64bit && \
-    mkdir /var/www/cgi-bin/.kube/ && \
-    touch /var/www/cgi-bin/.kube/config && \
+    mkdir /var/www/html/.kube/ && \
+    touch /var/www/html/.kube/config && \
+    chmod -R 755 /var/www/html && \
     chown -R apache /var/www/cgi-bin && \
     chmod 755 /var/www/cgi-bin/index.html && \
     chmod 755 /var/www/cgi-bin/account_setup.sh && \
