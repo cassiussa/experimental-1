@@ -179,7 +179,8 @@ else
   
   # Test run...
   COMMAND="bash account_setup.sh ${customerid} \"${projectname}\" ${devenvironment} ${qaenvironment} ${prodenvironment}"
-  eval ${COMMAND} > /dev/null 2>&1
+  #eval ${COMMAND} > /dev/null 2>&1
+  eval ${COMMAND}
   PROCESS_RESPONSE=$?
 
   if [[ "${PROCESS_RESPONSE}" == 0 ]]; then
