@@ -102,7 +102,7 @@ fi
 
 # LOGIN TO CLUSTER
 function ocLogin() {
-  LOGIN_COMMAND="oc login https://m.okd.supercass.com -u ${OKD_USERNAME} -p ${OKD_PASSWORD} --insecure-skip-tls-verify=true --config='/var/www/html/.kube/config'"
+  LOGIN_COMMAND="oc login https://m.okd.supercass.com -u ${OKD_USERNAME} -p ${OKD_PASSWORD} --insecure-skip-tls-verify=true"
   # Error Code #394 - could not log into the OKD cluster using the oc command
   eval "${LOGIN_COMMAND}" > /dev/null && return || errorExit "Unable to process request. Please contact support and provide Error Code #394."
 }
