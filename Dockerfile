@@ -39,6 +39,8 @@ RUN sed -i "s/#AddHandler cgi-script .cgi/AddHandler cgi-script .html/g" /etc/ht
     
 WORKDIR /var/www/html/
 
+ENV HOME /var/www/html/
+
 EXPOSE 8080
 USER 1001
 
