@@ -33,7 +33,8 @@ RUN sed -i "s/#AddHandler cgi-script .cgi/AddHandler cgi-script .html/g" /etc/ht
     chgrp -R 0 /run/httpd  && chmod -R g=u /run/httpd && \
     chgrp -R 0 /etc/httpd/logs  && chmod -R g=u /etc/httpd/logs && \
     ln -sf /dev/stdout /var/log/httpd/access_log && \
-    ln -sf /dev/stderr /var/log/httpd/error_log
+    ln -sf /dev/stderr /var/log/httpd/error_log && \
+    chmod 555 /var/www/cgi-bin/account_setup.sh
     
 WORKDIR /var/www/html/
 
