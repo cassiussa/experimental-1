@@ -131,7 +131,7 @@ function createAdminUser() {
   unset COMMAND
   THIS_ADMIN_USER="${1}"
   THIS_FULL_NAME="${2}"
-  COMMAND="oc create user ${THIS_ADMIN_USER} --full-name=\"${THIS_FULL_NAME}\""
+  COMMAND="oc create user ${THIS_ADMIN_USER} --full-name='${THIS_FULL_NAME}'"
   eval "${COMMAND}" > /dev/null && return
 }
 
