@@ -30,7 +30,10 @@ spec:
         deploymentconfig: accounts
     spec:
       containers:
-        - image: 'docker-registry.default.svc:5000/accounts/accounts:latest'
+        - envFrom:
+            - secretRef:
+                name: okd-login
+          image: 'docker-registry.default.svc:5000/accounts/accounts:latest'
           imagePullPolicy: Always
           name: accounts
           ports:
