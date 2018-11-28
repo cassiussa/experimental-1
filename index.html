@@ -178,7 +178,7 @@ else
 
   
   # Test run...
-  COMMAND="bash account_setup.sh ${customerid} \"${projectname}\" ${devenvironment} ${qaenvironment} ${prodenvironment}"
+  COMMAND="bash -x account_setup.sh ${customerid} \"${projectname}\" ${devenvironment} ${qaenvironment} ${prodenvironment}"
   #eval ${COMMAND} > /dev/null 2>&1
   eval ${COMMAND}
   PROCESS_RESPONSE=$?
