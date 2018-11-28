@@ -3,7 +3,7 @@ FROM centos7
 LABEL Maintainer="Cassius John-Adams <cassius.s.adams@gmail.com>"
 
 # Install Apache webserver, no docs, then cleanup right away
-RUN yum install httpd -y && \
+RUN yum install httpd wget -y && \
     yum clean all
 
 # Copy the index.html file (a bash script) and css style into the cgi-bin
