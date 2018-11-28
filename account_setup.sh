@@ -5,7 +5,7 @@ ID="${1}"
 # Code #395 : Could not create Project or cannot connect to the cluster via the 'oc' command.  The user account may also have gotten logged out.
 # Code #394 : Could not log into the cluster using the oc command
 
-DISPLAY_NAME="Tester Project A"
+DISPLAY_NAME="Tester Project C"
 # Change to lower case
 ORIGNAL_PROJECT_NAME="${DISPLAY_NAME,,}"
 # Temporarily generate a random customer ID
@@ -95,8 +95,8 @@ function retryCommand() {
     # Log into the cluster
     ocLogin
     # Run the command ${3} parameter.  If it succeeds, return from function.  Otherwise echo failed and then retry ${1} number of times
-    #eval ${3} > /dev/null 2>&1 && return 
-    eval ${3} && return
+    eval ${3} > /dev/null 2>&1 && return 
+    #eval ${3} && return
     [[ "${retries}" > 1 ]] && echo "Trying again in ${2} seconds"
     sleep ${2}
     # Exit out completely if we've failed to run the command ${1} times
@@ -313,7 +313,7 @@ function groupPermissions() {
   THIS_PROJECT_NAME="${2}"
   THIS_DISPLAY_NAME="${3}"
   THIS_ADMIN_GROUP="${4}"
-  THIS_ENVIRONMENT_GROUP="${5}" #THIS_DEV_GROUP
+  THIS_ENVIRONMENT_GROUP="${5}"
   THIS_ORIGNAL_PROJECT_NAME="${6}"
 
   ensureProjectExists "${THIS_ENVIRONMENT}" "${THIS_PROJECT_NAME}" "${THIS_DISPLAY_NAME}"
@@ -336,9 +336,10 @@ labelObject "user" "${ADMIN_USER}" "customerid" "${CUSTOMER_ID}"
 # Groups and their Permissions
 ensureAdminGroupExists "${ADMIN_GROUP}"
 labelObject "group" "${ADMIN_GROUP}" "customerid" "${CUSTOMER_ID}"
+#annotateObject "group" "{ADMIN_GROUP}" "7L.com/projects" "${ADMIN_GROUP}"
 ensureAdminGroupExists "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}"
 labelObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
-
+#annotateObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}"
 
 
 if [[ "${ENABLE_DEV}" == true ]]; then
@@ -349,7 +350,10 @@ if [[ "${ENABLE_DEV}" == true ]]; then
   labelObject "group" "${DEV_GROUP}" "customerid" "${CUSTOMER_ID}"
   labelObject "group" "${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
   annotateObject "group" "${DEV_GROUP}" "7L.com/projects" "${PROJECT_NAME}-dev"
+  annotateObject "group" "${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-dev"
   annotateObject "group" "${ADMIN_GROUP}" "7L.com/projects" "${PROJECT_NAME}-dev"
+
+  annotateObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-dev"
 fi
 
 if [[ "${ENABLE_QA}" == true ]]; then
@@ -360,7 +364,9 @@ if [[ "${ENABLE_QA}" == true ]]; then
   labelObject "group" "${QA_GROUP}" "customerid" "${CUSTOMER_ID}"
   labelObject "group" "${QA_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
   annotateObject "group" "${QA_GROUP}" "7L.com/projects" "${PROJECT_NAME}-qa"
+  annotateObject "group" "${QA_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-qa"
   annotateObject "group" "${ADMIN_GROUP}" "7L.com/projects" "${PROJECT_NAME}-qa"
+  annotateObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-qa"
 fi
 
 if [[ "${ENABLE_PROD}" == true ]]; then
@@ -371,7 +377,9 @@ if [[ "${ENABLE_PROD}" == true ]]; then
   labelObject "group" "${PROD_GROUP}" "customerid" "${CUSTOMER_ID}"
   labelObject "group" "${PROD_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
   annotateObject "group" "${PROD_GROUP}" "7L.com/projects" "${PROJECT_NAME}-prod"
+  annotateObject "group" "${PROD_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-prod"
   annotateObject "group" "${ADMIN_GROUP}" "7L.com/projects" "${PROJECT_NAME}-prod"
+  annotateObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-prod"
 fi
 
 
