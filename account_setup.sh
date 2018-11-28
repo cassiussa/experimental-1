@@ -112,7 +112,7 @@ function ocLogin() {
 # Accepts 3 parameters: ${1} Number of retries, ${2} time between retries, ${3} command to run
 function retryCommand() {
   # Iterate over the number of retries passed into the retryCommand function as 1st parameter
-  for retries in $(seq 1 $(outputMode "${1}")); do
+  for retries in $(seq 1 $(echo "${1}"))); do
     # Log into the cluster
     ocLogin
     # Run the command ${3} parameter.  If it succeeds, return from function.  Otherwise echo failed and then retry ${1} number of times
