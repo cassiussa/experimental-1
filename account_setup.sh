@@ -5,7 +5,7 @@ ID="${1}"
 # Code #395 : Could not create Project or cannot connect to the cluster via the 'oc' command.  The user account may also have gotten logged out.
 # Code #394 : Could not log into the cluster using the oc command
 
-DISPLAY_NAME="Tester Project C"
+DISPLAY_NAME="Tester Project A"
 # Change to lower case
 ORIGNAL_PROJECT_NAME="${DISPLAY_NAME,,}"
 # Temporarily generate a random customer ID
@@ -57,6 +57,8 @@ ENABLE_DEV=${2}
 ENABLE_QA=${3}
 ENABLE_PROD=${4}
 
+
+
 unset DEPLOYMENT_ENVIRONMENT
 
 # ERROR OUT AND PROVIDE MESSAGE
@@ -70,6 +72,11 @@ function debug() {
   eval "${1}"
 }
 # EXAMPLE: debug "echo \"here it is\""
+
+
+if [[ "${ENABLE_DEV}" == "false" && "${ENABLE_QA}" == "false" && "${ENABLE_PROD}" == "false" ]]; then
+  errorExit "No projects will be created.  You must create at least 1 project"
+fi
 
 
 # LOGIN TO CLUSTER
@@ -89,10 +96,7 @@ function retryCommand() {
     ocLogin
     # Run the command ${3} parameter.  If it succeeds, return from function.  Otherwise echo failed and then retry ${1} number of times
     #eval ${3} > /dev/null 2>&1 && return 
-    #debug "eval ${3} > /dev/null 2>&1 && return"
-    #debug "echo \"${3} <---- here\""
     eval ${3} && return
-    #echo "Attempt ${retries} of ${1} failed to create '${3}'."
     [[ "${retries}" > 1 ]] && echo "Trying again in ${2} seconds"
     sleep ${2}
     # Exit out completely if we've failed to run the command ${1} times
@@ -108,14 +112,6 @@ function createAdminUser() {
   THIS_FULL_NAME=${2}
   COMMAND="oc create user ${THIS_ADMIN_USER} --full-name=\"${THIS_FULL_NAME}\""
   eval ${COMMAND} > /dev/null && return
-#  COMMAND="oc label user ${THIS_ADMIN_USER} customerid=${CUSTOMER_ID}"
-#  retryCommand "1" "3" "${COMMAND}"
-#  POLL_FOR_USER_RESPONSE=$?
-#  if [[ "${POLL_FOR_USER_RESPONSE}" == 0 ]]; then
-#    errorExit "Error Code #393 - failed to label user."
-#  else
-#    echo "Labeled user"
-#  fi
 }
 
 
@@ -151,6 +147,48 @@ function labelObject() {
     echo "Labeled ${THIS_OBJECT_TYPE}"
   else
     errorExit "Error Code #393 - failed to label user."
+  fi
+}
+
+
+function annotateObject() {
+  unset THIS_OBJECT_TYPE
+  unset THIS_OBJECT
+  unset THIS_KEY
+  unset THIS_VALUE
+  unset ANNOTATE_COMMAND
+  unset EXISTING_ANNOTATION
+  unset ANNOTATE_COMMAND_RESPONSE
+
+  THIS_OBJECT_TYPE="${1}"
+  THIS_OBJECT="${2}"
+  THIS_KEY="${3}"
+  # The space at the end of the next line is on purpose
+  THIS_VALUE="${4} "
+  OVERWRIITE=""
+
+  COMMAND="oc get ${THIS_OBJECT_TYPE} ${THIS_OBJECT} -o template --template '{{ index .metadata.annotations \"${THIS_KEY}\" }}'"
+  retryCommand "1" "3" "${COMMAND}"
+  COMMAND_RESPONSE=$?
+  if [[ "${COMMAND_RESPONSE}" == 0 ]]; then
+    EXISTING_ANNOTATION=$(eval ${COMMAND})
+    if [[ "${EXISTING_ANNOTATION}" == "<no value>" ]]; then
+      THIS_VALUE="${THIS_VALUE}"
+    elif [[ "${EXISTING_ANNOTATION}" == *"${THIS_VALUE}"* ]]; then
+      THIS_VALUE="${EXISTING_ANNOTATION}"
+    else
+      THIS_VALUE="${EXISTING_ANNOTATION} ${THIS_VALUE}"
+    fi
+    OVERWRITE="--overwrite=true"
+  fi
+  ANNOTATE_COMMAND="oc annotate ${THIS_OBJECT_TYPE} ${THIS_OBJECT} ${OVERWRITE} ${THIS_KEY}='${THIS_VALUE}'"
+
+  retryCommand "1" "3" "${ANNOTATE_COMMAND}"
+  ANNOTATE_COMMAND_RESPONSE=$?
+  if [[ "${ANNOTATE_COMMAND_RESPONSE}" == 0 ]]; then
+    return
+  else
+    errorExit "Error Code #396 - Could not add annotation to ${THIS_OBJECT_TYPE} ${THIS_OBJECT}."
   fi
 }
 
@@ -238,9 +276,7 @@ function ensureAdminGroupPermissions() {
   THIS_ADMIN_GROUP="${3}"
   echo "Set permissions for Group: '${THIS_ADMIN_GROUP}'"
   COMMAND="oc adm policy add-role-to-group admin ${THIS_ADMIN_GROUP} -n ${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT}"
-  #debug "echo \"##################\""
   retryCommand "1" "3" "${COMMAND}"
-  #debug "echo \"##################################\""
   COMMAND_RESPONSE=$?
   if [[ "${COMMAND_RESPONSE}" == 0 ]]; then
     echo "Added administrative permissions to the '${THIS_ADMIN_GROUP}' Group on the '${THIS_PROJECT_NAME}-${THIS_DEPLOYMENT_ENVIRONMENT}' Project"
@@ -272,84 +308,76 @@ function addUserToGroup() {
 }
 
 
+function groupPermissions() {
+  THIS_ENVIRONMENT="${1}"
+  THIS_PROJECT_NAME="${2}"
+  THIS_DISPLAY_NAME="${3}"
+  THIS_ADMIN_GROUP="${4}"
+  THIS_ENVIRONMENT_GROUP="${5}" #THIS_DEV_GROUP
+  THIS_ORIGNAL_PROJECT_NAME="${6}"
+
+  ensureProjectExists "${THIS_ENVIRONMENT}" "${THIS_PROJECT_NAME}" "${THIS_DISPLAY_NAME}"
+  ensureAdminGroupPermissions "${THIS_ENVIRONMENT}" "${THIS_PROJECT_NAME}" "${THIS_ADMIN_GROUP}"
+  ensureAdminGroupExists ${THIS_ENVIRONMENT_GROUP}
+  ensureAdminGroupPermissions "${THIS_ENVIRONMENT}" "${THIS_PROJECT_NAME}" "${THIS_ENVIRONMENT_GROUP}"
+  ensureAdminGroupExists ${THIS_ENVIRONMENT_GROUP}-${THIS_ORIGNAL_PROJECT_NAME}
+  ensureAdminGroupPermissions "${THIS_ENVIRONMENT}" "${THIS_PROJECT_NAME}" "${THIS_ENVIRONMENT_GROUP}-${THIS_ORIGNAL_PROJECT_NAME}"
+  # Grant admin access to the application-level admin group (ex: dev, qa and prod)
+  ensureAdminGroupPermissions "${THIS_ENVIRONMENT}" "${THIS_PROJECT_NAME}" "${THIS_ADMIN_GROUP}-${THIS_ORIGNAL_PROJECT_NAME}"
+}
 
 
+
+
+# Admin User
 ensureAdminUserExist ${ADMIN_USER}
 labelObject "user" "${ADMIN_USER}" "customerid" "${CUSTOMER_ID}"
 
-
-ensureAdminGroupExists ${ADMIN_GROUP}
+# Groups and their Permissions
+ensureAdminGroupExists "${ADMIN_GROUP}"
 labelObject "group" "${ADMIN_GROUP}" "customerid" "${CUSTOMER_ID}"
-ensureAdminGroupExists ${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}
+ensureAdminGroupExists "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}"
 labelObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
 
 
 
 if [[ "${ENABLE_DEV}" == true ]]; then
-  ensureProjectExists "dev" "${PROJECT_NAME}" "${DISPLAY_NAME}"
-  ensureAdminGroupPermissions "dev" "${PROJECT_NAME}" "${ADMIN_GROUP}"
-  ensureAdminGroupExists ${DEV_GROUP}
-  ensureAdminGroupPermissions "dev" "${PROJECT_NAME}" "${DEV_GROUP}"
-  ensureAdminGroupExists ${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}
-  ensureAdminGroupPermissions "dev" "${PROJECT_NAME}" "${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}"
-
-  # Grant admin access to the application-level admin group (ex: dev, qa and prod)
-  ensureAdminGroupPermissions "dev" "${PROJECT_NAME}" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}"
-
+  groupPermissions "dev" "${PROJECT_NAME}" "${DISPLAY_NAME}" "${ADMIN_GROUP}" "${DEV_GROUP}" "${ORIGNAL_PROJECT_NAME}"
   # LABELS
   labelObject "namespace" "${PROJECT_NAME}-dev" "customerid" "${CUSTOMER_ID}"
   labelObject "namespace" "${PROJECT_NAME}-dev" "deployment_environment" "development"
   labelObject "group" "${DEV_GROUP}" "customerid" "${CUSTOMER_ID}"
   labelObject "group" "${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
-
-#  addUserToGroup "${DEV_GROUP}" "${ADMIN_USER}"
-#  addUserToGroup "${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}" "${ADMIN_USER}"
+  annotateObject "group" "${DEV_GROUP}" "7L.com/projects" "${PROJECT_NAME}-dev"
+  annotateObject "group" "${ADMIN_GROUP}" "7L.com/projects" "${PROJECT_NAME}-dev"
 fi
 
-debug "echo \"================================================\""
-
 if [[ "${ENABLE_QA}" == true ]]; then
-  ensureProjectExists "qa" "${PROJECT_NAME}" "${DISPLAY_NAME}"
-  ensureAdminGroupPermissions "qa" "${PROJECT_NAME}" "${ADMIN_GROUP}"
-  ensureAdminGroupExists ${QA_GROUP}
-  ensureAdminGroupPermissions "qa" "${PROJECT_NAME}" "${QA_GROUP}"
-  ensureAdminGroupExists ${QA_GROUP}-${ORIGNAL_PROJECT_NAME}
-  ensureAdminGroupPermissions "qa" "${PROJECT_NAME}" "${QA_GROUP}-${ORIGNAL_PROJECT_NAME}"
-
-  # Grant admin access to the application-level admin group (ex: dev, qa and prod)
-  ensureAdminGroupPermissions "qa" "${PROJECT_NAME}" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}"
-
+  groupPermissions "qa" "${PROJECT_NAME}" "${DISPLAY_NAME}" "${ADMIN_GROUP}" "${QA_GROUP}" "${ORIGNAL_PROJECT_NAME}"
   # LABELS
   labelObject "namespace" "${PROJECT_NAME}-qa" "customerid" "${CUSTOMER_ID}"
   labelObject "namespace" "${PROJECT_NAME}-qa" "deployment_environment" "quality-assurance"
   labelObject "group" "${QA_GROUP}" "customerid" "${CUSTOMER_ID}"
   labelObject "group" "${QA_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
-
+  annotateObject "group" "${QA_GROUP}" "7L.com/projects" "${PROJECT_NAME}-qa"
+  annotateObject "group" "${ADMIN_GROUP}" "7L.com/projects" "${PROJECT_NAME}-qa"
 fi
 
-debug "echo \"================================================\""
-
 if [[ "${ENABLE_PROD}" == true ]]; then
-  ensureProjectExists "prod" "${PROJECT_NAME}" "${DISPLAY_NAME}"
-  ensureAdminGroupPermissions "prod" "${PROJECT_NAME}" "${ADMIN_GROUP}"
-  ensureAdminGroupExists ${PROD_GROUP}
-  ensureAdminGroupPermissions "prod" "${PROJECT_NAME}" "${PROD_GROUP}"
-  ensureAdminGroupExists ${PROD_GROUP}-${ORIGNAL_PROJECT_NAME}
-  ensureAdminGroupPermissions "prod" "${PROJECT_NAME}" "${PROD_GROUP}-${ORIGNAL_PROJECT_NAME}"
-
-  # Grant admin access to the application-level admin group (ex: dev, qa and prod)
-  ensureAdminGroupPermissions "prod" "${PROJECT_NAME}" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}"
-
+  groupPermissions "prod" "${PROJECT_NAME}" "${DISPLAY_NAME}" "${ADMIN_GROUP}" "${PROD_GROUP}" "${ORIGNAL_PROJECT_NAME}"
   # LABELS
   labelObject "namespace" "${PROJECT_NAME}-prod" "customerid" "${CUSTOMER_ID}"
   labelObject "namespace" "${PROJECT_NAME}-prod" "deployment_environment" "production"
   labelObject "group" "${PROD_GROUP}" "customerid" "${CUSTOMER_ID}"
   labelObject "group" "${PROD_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
-
+  annotateObject "group" "${PROD_GROUP}" "7L.com/projects" "${PROJECT_NAME}-prod"
+  annotateObject "group" "${ADMIN_GROUP}" "7L.com/projects" "${PROJECT_NAME}-prod"
 fi
 
+
 debug "echo \"================================================\""
 debug "echo \"================================================\""
+
 
 # Add Users
 addUserToGroup "${ADMIN_GROUP}" "${ADMIN_USER}"
