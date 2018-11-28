@@ -2,6 +2,8 @@ FROM centos7
 
 LABEL Maintainer="Cassius John-Adams <cassius.s.adams@gmail.com>"
 
+ENV HOME /var/www/html/ KUBECONFIG ~/.kube/config
+
 # Install Apache webserver, no docs, then cleanup right away
 RUN yum install httpd wget -y && \
     yum clean all
@@ -39,8 +41,6 @@ RUN sed -i "s/#AddHandler cgi-script .cgi/AddHandler cgi-script .html/g" /etc/ht
     chmod 555 /var/www/cgi-bin/account_setup.sh
     
 WORKDIR /var/www/html/
-
-ENV HOME /var/www/html/
 
 EXPOSE 8080
 USER 1001
