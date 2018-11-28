@@ -20,11 +20,8 @@ FORMAT="Incorrect invocation of the 'account_setup' script.  :  account_setup.sh
 # Code #395 : Could not create Project or cannot connect to the cluster via the 'oc' command.  The user account may also have gotten logged out.
 # Code #394 : Could not log into the cluster using the oc command
 
-#DISPLAY_NAME="Ocelot Application Example"
 # Change to lower case
 ORIGNAL_PROJECT_NAME="${DISPLAY_NAME,,}"
-# Temporarily generate a random customer ID
-#CUSTOMER_ID="$(shuf -i 123700-250000 -n 1)"
 CUSTOMER_ID="${ID}"
 PROJECT_NAME="${CUSTOMER_ID}-${ORIGNAL_PROJECT_NAME}"
 # Replace spaces with -
@@ -105,7 +102,6 @@ fi
 
 # LOGIN TO CLUSTER
 function ocLogin() {
-  outputMode "oc login https://m.okd.supercass.com -u ${OKD_USERNAME} -p L4ma${OKD_PASSWORD}Zza --insecure-skip-tls-verify=true --config='/var/www/html/.kube/config'"
   LOGIN_COMMAND="oc login https://m.okd.supercass.com -u ${OKD_USERNAME} -p ${OKD_PASSWORD} --insecure-skip-tls-verify=true --config='/var/www/html/.kube/config'"
   # Error Code #394 - could not log into the OKD cluster using the oc command
   eval ${LOGIN_COMMAND} > /dev/null && return || errorExit "Unable to process request. Please contact support and provide Error Code #394."
@@ -355,29 +351,44 @@ function groupPermissions() {
 
 
 # Admin User
+outputMode "ensureAdminUserExist"
 ensureAdminUserExist ${ADMIN_USER}
+outputMode "labelObject \"user\" \"${ADMIN_USER}\""
 labelObject "user" "${ADMIN_USER}" "customerid" "${CUSTOMER_ID}"
 
 # Groups and their Permissions
+outputMode "ensureAdminGroupExists \"${ADMIN_GROUP}\""
 ensureAdminGroupExists "${ADMIN_GROUP}"
+outputMode "labelObject \"group\" \"${ADMIN_GROUP}\" \"customerid\" \"${CUSTOMER_ID}\""
 labelObject "group" "${ADMIN_GROUP}" "customerid" "${CUSTOMER_ID}"
 #annotateObject "group" "{ADMIN_GROUP}" "7L.com/projects" "${ADMIN_GROUP}"
+outputMode "ensureAdminGroupExists \"${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}\""
 ensureAdminGroupExists "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}"
+outputMode "labelObject \"group\" \"${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}\" \"customerid\" \"${CUSTOMER_ID}\""
 labelObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
 #annotateObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}"
 
 
 if [[ "${ENABLE_DEV}" == true ]]; then
+  outputMode "groupPermissions \"dev\" \"${PROJECT_NAME}\" \"${DISPLAY_NAME}\" \"${ADMIN_GROUP}\" \"${DEV_GROUP}\" \"${ORIGNAL_PROJECT_NAME}\""
   groupPermissions "dev" "${PROJECT_NAME}" "${DISPLAY_NAME}" "${ADMIN_GROUP}" "${DEV_GROUP}" "${ORIGNAL_PROJECT_NAME}"
   # LABELS
+    outputMode "labelObject \"namespace\" \"${PROJECT_NAME}-dev\" \"customerid\" \"${CUSTOMER_ID}\""
   labelObject "namespace" "${PROJECT_NAME}-dev" "customerid" "${CUSTOMER_ID}"
+  outputMode "labelObject \"namespace\" \"${PROJECT_NAME}-dev\" \"deployment_environment\" \"development\""
   labelObject "namespace" "${PROJECT_NAME}-dev" "deployment_environment" "development"
+  outputMode "labelObject \"group\" \"${DEV_GROUP}\" \"customerid\" \"${CUSTOMER_ID}\""
   labelObject "group" "${DEV_GROUP}" "customerid" "${CUSTOMER_ID}"
+  outputMode "labelObject \"group\" \"${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}\" \"customerid\" \"${CUSTOMER_ID}\""
   labelObject "group" "${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
+  outputMode "annotateObject \"group\" \"${DEV_GROUP}\" \"7L.com/projects\" \"${PROJECT_NAME}-dev\""
   annotateObject "group" "${DEV_GROUP}" "7L.com/projects" "${PROJECT_NAME}-dev"
+  outputMode "annotateObject \"group\" \"${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}\" \"7L.com/projects\" \"${PROJECT_NAME}-dev\""
   annotateObject "group" "${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-dev"
+  outputMode "annotateObject \"group\" \"${ADMIN_GROUP}\" \"7L.com/projects\" \"${PROJECT_NAME}-dev\""
   annotateObject "group" "${ADMIN_GROUP}" "7L.com/projects" "${PROJECT_NAME}-dev"
 
+  outputMode "annotateObject \"group\" \"${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}\" \"7L.com/projects\" \"${PROJECT_NAME}-dev\""
   annotateObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-dev"
 fi
 
@@ -410,7 +421,9 @@ fi
 
 
 # Add Users
+outputMode "addUserToGroup \"${ADMIN_GROUP}\" \"${ADMIN_USER}\""
 addUserToGroup "${ADMIN_GROUP}" "${ADMIN_USER}"
+outputMode "addUserToGroup \"${PROJECT_ADMIN_GROUP}\" \"${ADMIN_USER}\""
 addUserToGroup "${PROJECT_ADMIN_GROUP}" "${ADMIN_USER}"
 
 
