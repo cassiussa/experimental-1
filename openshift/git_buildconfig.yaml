@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: BuildConfig
+metadata:
+  annotations:
+  labels:
+    app: git
+  name: git
+spec:
+  failedBuildsHistoryLimit: 2
+  output:
+    to:
+      kind: ImageStreamTag
+      name: git:latest
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    git:
+      uri: https://github.com/cassiussa/experimental-1.git
+    type: Git
+  strategy:
+    dockerStrategy:
+      dockerfilePath: Dockerfile.gitlab-ce
+      from:
+        kind: DockerImage
+        name: centos:7
+      noCache: true
+    type: Docker
+  successfulBuildsHistoryLimit: 2
+  triggers: []
