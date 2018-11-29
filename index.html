@@ -105,9 +105,9 @@ echo "</head>"
 echo "<body>"
 echo "<div class=\"container\">"
 echo "<div class=\"row\">"
+echo "<div class=\"form-group\">"
 echo "<h1>Project Creator (alpha)</h1>"
 echo "This is where you can create a new Project.<br /><br />"
-echo "- Fill out all 4 fields as expected<br />"
 
 
 
@@ -118,41 +118,46 @@ cgi_getvars BOTH ALL
   # We haven't hit submit, so present the main form page
 if [ -z "${QUERY_STRING_POST}" ]; then
  
-  echo "<div class=\"form-group\">" 
   echo "<div class=\"col-sm-7 col-md-6 col-lg-5 login\">"
   echo "<form class=\"form-horizontal\" role=\"form\" action=\"/\" method=\"post\">"
   
 
-  echo "<label for=\"customerid\" class=\"col-sm-6 col-md-6 control-label\">Enter your CustomerID (ex: 124189) </label>"
-  echo "<div class=\"col-sm-10 col-md-10\">"
+  echo "<div class=\"col-sm-10 col-md-10 col-lg-10\">"
+  echo "<label for=\"customerid\" class=\"col-sm-5 col-md-5 col-lg-5 control-label\">Enter your CustomerID (ex: 124189) </label>"
+  echo "<div class=\"col-sm-5 col-md-5 col-lg-5\">"
   echo "<input type=\"text\" name=\"customerid\" class=\"form-control\" id=\"customerid\" placeholder=\"\" tabindex=\"1\" autofocus=\"autofocus\"></input><br />"
-  echo "</div>"
+  echo "</div></div>"
 
-  echo "<label for=\"projectname\" class=\"col-sm-6 col-md-6 control-label\">Name for the Project</label>"
-  echo "<div class=\"col-sm-10 col-md-10\">"
+  echo "<div class=\"col-sm-10 col-md-10 col-lg-10\">"
+  echo "<label for=\"projectname\" class=\"col-sm-5 col-md-5 col-lg-5 control-label\">Name for the Project</label>"
+  echo "<div class=\"col-sm-5 col-md-5 col-lg-5\">"
   echo "<input type=\"text\" name=\"projectname\" class=\"form-control\" id=\"projectname\" placeholder=\"\" tabindex=\"1\" autofocus=\"autofocus\" ></input><br />"
-  echo "</div>"
-  
-  echo "<label for=\"password\" class=\"col-sm-6 col-md-6 control-label\">Password</label>"
-  echo "<div class=\"col-sm-10 col-md-10\">"
+  echo "</div></div>"
+
+  echo "<div class=\"col-sm-10 col-md-10 col-lg-10\">"  
+  echo "<label for=\"password\" class=\"col-sm-5 col-md-5 col-lg-5 control-label\">Password</label>"
+  echo "<div class=\"col-sm-5 col-md-5 col-lg-5\">"
   echo "<input type=\"password\" name=\"password\" class=\"form-control\" id=\"password\" placeholder=\"\" tabindex=\"1\" autofocus=\"autofocus\" ></input><br />"
-  echo "</div>"
+  echo "</div></div>"
 
 
-  echo "<div class=\"col-sm-10 col-md-10\">"
-  echo "<label for=\"devenvironment\" class=\"control-label\">Development enviroment</label>"
+  echo "<div class=\"col-sm-10 col-md-10 col-lg-10\">"
+  echo "<label for=\"devenvironment\" class=\"col-sm-5 col-md-5 col-lg-5 control-label\">Development enviroment</label>"
+  echo "<div class=\"col-sm-5 col-md-5 col-lg-5\">"
   echo "<input type=\"checkbox\" name=\"devenvironment\" class=\"checkbox-inline\" id=\"devenvironment\" placeholder=\"\" tabindex=\"1\" autofocus=\"autofocus\" ></input><br />"
-  echo "</div>"
+  echo "</div></div>"
 
-  echo "<div class=\"col-sm-10 col-md-10\">"
-  echo "<label for=\"qaenvironment\" class=\"control-label\">QA enviroment</label>"
+  echo "<div class=\"col-sm-10 col-md-10 col-lg-10\">"
+  echo "<label for=\"qaenvironment\" class=\"col-sm-5 col-md-5 col-lg-5 control-label\">QA enviroment</label>"
+  echo "<div class=\"col-sm-5 col-md-5 col-lg-5\">"
   echo "<input type=\"checkbox\" name=\"qaenvironment\" class=\"checkbox-inline\" id=\"qaenvironment\" placeholder=\"\" tabindex=\"1\" autofocus=\"autofocus\" ></input><br />"
-  echo "</div>"
+  echo "</div></div>"
 
-  echo "<div class=\"col-sm-10 col-md-10\">"
-  echo "<label for=\"prodenvironment\" class=\"control-label\">Production enviroment? (either 'true' or 'false' for now)</label>"
+  echo "<div class=\"col-sm-10 col-md-10 col-lg-10\">"
+  echo "<label for=\"prodenvironment\" class=\"col-sm-5 col-md-5 col-lg-5 control-label\">Production enviroment? (either 'true' or 'false' for now)</label>"
+  echo "<div class=\"col-sm-5 col-md-5 col-lg-5\">"
   echo "<input type=\"checkbox\" name=\"prodenvironment\" class=\"checkbox-inline\" id=\"prodenvironment\" placeholder=\"\" tabindex=\"1\" autofocus=\"autofocus\" ></input><br />"
-  echo "</div>"
+  echo "</div></div>"
 
 
   echo "<div class=\"col-xs-8 col-sm-offset-2 col-sm-6 col-md-offset-2 col-md-6\">"
