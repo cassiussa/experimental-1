@@ -12,7 +12,8 @@ ENABLE_QA=${4}
 ENABLE_PROD=${5}
 
 
-MODE="html"
+# Switch between HTML mode and BASH mode
+[[ "${6}" == "html" ]] && MODE="html" | MODE=""
 
 FORMAT="Incorrect invocation of the 'account_setup' script.  :  account_setup.sh <customer_id> \"<name of the Project>\" <enable DEV? (options: true, false)> <enable QA? (options: true, false)> <enable PROD? (options: true, false)>"
 
