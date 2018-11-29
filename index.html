@@ -107,7 +107,8 @@ echo "<div class=\"container\">"
 echo "<div class=\"row\">"
 echo "<h1>Project Creator (alpha)</h1>"
 echo "This is where you can create a new Project.<br /><br />"
-
+echo "</div>"
+echo "<div class=\"row\">"
 
 
 # Register all GET and POST variables based on the name given to their HTML form elements
@@ -174,7 +175,7 @@ if [ -z "${QUERY_STRING_POST}" ]; then
 # submit was clicked
 else
 
-  echo "<div class=\"col-sm-7 col-md-6 col-lg-5 login\">"
+  echo "<div class=\"col-sm-10 col-md-9 col-lg-8 login\">"
 
   # Make sure we have either true or false for environment setups
   [[ "${devenvironment}" != "true" ]] && devenvironment="false"
