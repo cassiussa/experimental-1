@@ -176,7 +176,12 @@ else
 
   echo "<div class=\"col-sm-7 col-md-6 col-lg-5 login\">"
 
-  # Test run...
+  # Make sure we have either true or false for environment setups
+  [[ "${devenvironment}" != "true" ]] && devenvironment="false"
+  [[ "${qaenvironment}" != "true" ]] && qaenvironment="false"
+  [[ "${prodenvironment}" != "true" ]] && prodenvironment="false"
+
+  # Prepare the command to pass and run it
   COMMAND="bash -x account_setup.sh ${customerid} \"${projectname}\" ${devenvironment} ${qaenvironment} ${prodenvironment} \"html\""
   #eval ${COMMAND} > /dev/null 2>&1
   eval ${COMMAND}
