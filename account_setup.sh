@@ -10,10 +10,10 @@ ENABLE_DEV=${3}
 ENABLE_QA=${4}
 # Configure a Production environment for the Project?
 ENABLE_PROD=${5}
-
+MODE="${6}"
 
 # Switch between HTML mode and BASH mode
-[[ "${6}" == "html" ]] && MODE="html" || MODE=""
+#[[ "${MODE}" != "html" ]] && MODE=""
 
 FORMAT="Incorrect invocation of the 'account_setup' script.  :  account_setup.sh <customer_id> \"<name of the Project>\" <enable DEV? (options: true, false)> <enable QA? (options: true, false)> <enable PROD? (options: true, false)>"
 
