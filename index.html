@@ -105,7 +105,6 @@ echo "</head>"
 echo "<body>"
 echo "<div class=\"container\">"
 echo "<div class=\"row\">"
-echo "<div class=\"form-group\">"
 echo "<h1>Project Creator (alpha)</h1>"
 echo "This is where you can create a new Project.<br /><br />"
 
@@ -118,6 +117,7 @@ cgi_getvars BOTH ALL
   # We haven't hit submit, so present the main form page
 if [ -z "${QUERY_STRING_POST}" ]; then
  
+  echo "<div class=\"form-group\">"
   echo "<div class=\"col-sm-7 col-md-6 col-lg-5 login\">"
   echo "<form class=\"form-horizontal\" role=\"form\" action=\"/\" method=\"post\">"
   
@@ -174,9 +174,10 @@ if [ -z "${QUERY_STRING_POST}" ]; then
 # submit was clicked
 else
 
-  
+  echo "<div class=\"col-sm-7 col-md-6 col-lg-5 login\">"
+
   # Test run...
-  COMMAND="bash -x account_setup.sh ${customerid} \"${projectname}\" ${devenvironment} ${qaenvironment} ${prodenvironment}"
+  COMMAND="bash -x account_setup.sh ${customerid} \"${projectname}\" ${devenvironment} ${qaenvironment} ${prodenvironment} \"html\""
   #eval ${COMMAND} > /dev/null 2>&1
   eval ${COMMAND}
   PROCESS_RESPONSE=$?
@@ -191,7 +192,8 @@ else
     echo "Response was...<br />${PROCESS}<br /><br />"
   fi
 
-  echo "<br /><br />"
+  echo "</div><br />"
+
 fi
 
 
