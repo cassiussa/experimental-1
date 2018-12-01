@@ -6,7 +6,8 @@ ENV HOME /var/www/html/
 ENV KUBECONFIG /var/www/html/.kube/config
 
 # Install Apache webserver, no docs, then cleanup right away
-RUN yum install httpd wget jq -y && \
+RUN yum install epel-release -y && \
+    yum install httpd wget jq -y && \
     yum clean all
 
 # Copy the index.html file (a bash script) and css style into the cgi-bin
