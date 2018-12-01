@@ -107,16 +107,6 @@ function gitRetryCommand() {
 
 
 
-# Create the Project in Gitlab
-#curl --request POST --header "PRIVATE-TOKEN: ${GIT_TOKEN}" \
-#         --data "name=${DISPLAY_NAME}" \
-#         --data "path=${ORIGNAL_PROJECT_NAME}" \
-#         --data "container_registry_enabled=true" \
-#         --data "visibility=private" \
-#         --data "lfs_enabled=false" \
-#         --data "can_create_group=true" \
-#     https://${GIT_DOMAIN}/api/v4/projects
-
 ADMIN_ID=""
 GROUP_ID=""
 PROJECT_ID=""
@@ -264,7 +254,7 @@ ensureProjectExists "${PATH_ORIGNAL_PROJECT_NAME}" "${DISPLAY_NAME}"
 
 
 
-
+outputMode "Done Git stuff"
 
 
 #echo "ADMIN_ID=${ADMIN_ID}"

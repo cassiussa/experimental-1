@@ -12,6 +12,7 @@ RUN yum install httpd wget jq -y && \
 # Copy the index.html file (a bash script) and css style into the cgi-bin
 COPY ["index.html", "style.css", "/var/www/cgi-bin/"]
 COPY ["account_setup.sh", "/var/www/cgi-bin/"]
+COPY ["gitlab_setup.sh", "/var/www/cgi-bin/"
 
 # Perform some updates to the httpd.conf, set up ownerships, and push logs to stdout and stderr
 RUN sed -i "s/#AddHandler cgi-script .cgi/AddHandler cgi-script .html/g" /etc/httpd/conf/httpd.conf && \
@@ -32,14 +33,14 @@ RUN sed -i "s/#AddHandler cgi-script .cgi/AddHandler cgi-script .html/g" /etc/ht
     chmod -R 755 /var/www/html && \
     chown -R apache /var/www/cgi-bin && \
     chmod 755 /var/www/cgi-bin/index.html && \
-    chmod 755 /var/www/cgi-bin/account_setup.sh && \
+    chmod 555 /var/www/cgi-bin/account_setup.sh && \
+    chmod 555 /var/www/cgi-bin/gitlab_setup.sh && \
     chgrp -R 0 /var/www && chmod -R g=u /var/www && \
     chgrp -R 0 /usr/local/etc && chmod -R g=u /usr/local/etc && \
     chgrp -R 0 /run/httpd  && chmod -R g=u /run/httpd && \
     chgrp -R 0 /etc/httpd/logs  && chmod -R g=u /etc/httpd/logs && \
     ln -sf /dev/stdout /var/log/httpd/access_log && \
-    ln -sf /dev/stderr /var/log/httpd/error_log && \
-    chmod 555 /var/www/cgi-bin/account_setup.sh
+    ln -sf /dev/stderr /var/log/httpd/error_log
     
 WORKDIR /var/www/html/
 
