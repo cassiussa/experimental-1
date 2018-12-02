@@ -361,11 +361,15 @@ function createGitSecret() {
   THIS_PROJECT_NAMESPACE="${2}"
   THIS_CUSTOMER_ID="${3}"
   unset COMMAND
-  COMMAND="ssh-keygen -C \"git-source-builder/${THIS_PROJECT_NAMESPACE}@${GIT_PREFIX}.${APP_DOMAIN}\" -f /tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET} -N '' && \
-           oc create secret generic ${THIS_SECRET} --from-file=ssh-privatekey=/tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET} --type=kubernetes.io/ssh-auth -n ${THIS_PROJECT_NAMESPACE} && \
-           cat /tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET}.pub && \
-           rm -rf /tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET}*"
-  eval ${COMMAND} > /dev/null && return
+  COMMAND="ssh-keygen -C \"git-source-builder/${THIS_PROJECT_NAMESPACE}@${GIT_PREFIX}.${APP_DOMAIN}\" -f /tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET} -N ''"
+  eval ${COMMAND} > /dev/null
+  COMMAND="oc create secret generic ${THIS_SECRET} --from-file=ssh-privatekey=/tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET} --type=kubernetes.io/ssh-auth -n ${THIS_PROJECT_NAMESPACE}"
+  eval ${COMMAND} > /dev/null
+  COMMAND="cat /tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET}.pub"
+  eval ${COMMAND} > /dev/null
+  COMMAND="rm -rf /tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET}*"
+  eval ${COMMAND} > /dev/null
+  return
 }
 
 
@@ -384,6 +388,7 @@ function ensureGitSecretExists() {
     createGitSecret "${THIS_PROJECT_NAMESPACE}" "${THIS_CUSTOMER_ID}"
     CREATE_SECRET_RESPONSE=$?
     [[ ${CREATE_SECRET_RESPONSE} ]] && outputMode "Created secret '${THIS_SECRET}'"; return || errorExit "Unable to create secret ${THIS_SECRET}"
+  fi
 }
 
 
