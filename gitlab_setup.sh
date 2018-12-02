@@ -88,21 +88,21 @@ PROJECT_ID=""
 function createGitAdminUser() {
   unset COMMAND
   THIS_ADMIN_USER="${1}"
-  COMMAND="curl --silent --request POST --header 'PRIVATE-TOKEN: ${GIT_TOKEN}' \
-     --data 'email=cassius.s.adams@gmail.com' \
-     --data 'password=somepass' \
-     --data 'username=${THIS_ADMIN_USER}' \
-     --data 'name=${THIS_ADMIN_USER}' \
-     --data 'private_profile=true' \
-     --data 'skip_confirmation=true' \
-     https://${GIT_DOMAIN}/api/v4/users"
+  COMMAND="http --print=b POST https://${GIT_DOMAIN}/api/v4/users \
+     email==cassius.s.adams@gmail.com \
+     password==somepass \
+     username==${THIS_ADMIN_USER} \
+     name==${THIS_ADMIN_USER} \
+     private_profile==true \
+     skip_confirmation==true \
+     PRIVATE-TOKEN:${GIT_TOKEN}"
   COMMAND_RESPONSE=$(eval ${COMMAND})
   ADMIN_ID="$(echo ${COMMAND_RESPONSE} | jq -r .id)"
 }
 
 function ensureGitAdminUserExists() {
   THIS_ADMIN_USER="${1}"
-  COMMAND="curl --silent --request GET https://${GIT_DOMAIN}/api/v4/users?username=${THIS_ADMIN_USER} --header \"PRIVATE-TOKEN: ${GIT_TOKEN}\" "
+  COMMAND="http --print=b GET https://${GIT_DOMAIN}/api/v4/users username==${THIS_ADMIN_USER} PRIVATE-TOKEN:${GIT_TOKEN}"
   POLL_FOR_USER="$(eval ${COMMAND})"
   if [[ "${POLL_FOR_USER}" != "[]" ]]; then
     ADMIN_ID=$(echo ${POLL_FOR_USER} | jq -r ".[].id")
@@ -120,20 +120,19 @@ function ensureGitAdminUserExists() {
 function createGitGroup() {
   unset COMMAND
   THIS_ADMIN_GROUP="${1}"
-  COMMAND="curl --silent --request POST --header 'PRIVATE-TOKEN: ${GIT_TOKEN}' \
-     --data 'name=${THIS_ADMIN_GROUP}' \
-     --data 'path=${CUSTOMER_ID}' \
-     --data 'visibility=private' \
-     --data 'lfs_enabled=false' \
-     https://${GIT_DOMAIN}/api/v4/groups"
-#     --data 'name=${THIS_ADMIN_GROUP}' \
+  COMMAND="http --print=b POST https://${GIT_DOMAIN}/api/v4/groups  \
+     name==${THIS_ADMIN_GROUP} \
+     path==${CUSTOMER_ID} \
+     visibility==private \
+     lfs_enabled==false \
+     PRIVATE-TOKEN: ${GIT_TOKEN}"
    COMMAND_RESPONSE=$(eval ${COMMAND})
    GROUP_ID="$(echo ${COMMAND_RESPONSE} | jq -r .id)"
 }
 
 function ensureGitGroupExists() {
   THIS_ADMIN_GROUP="${1}"
-  COMMAND="curl --silent --request GET https://${GIT_DOMAIN}/api/v4/groups?search=${CUSTOMER_ID} --header 'PRIVATE-TOKEN: ${GIT_TOKEN}'"
+  COMMAND="http --print=b GET https://${GIT_DOMAIN}/api/v4/groups search==${CUSTOMER_ID} PRIVATE-TOKEN:${GIT_TOKEN}"
   POLL_FOR_GROUP=$(eval ${COMMAND})
   THIS_GROUP_ID=$(echo ${POLL_FOR_GROUP} | jq -r ".[].id")
   if [[ "${THIS_GROUP_ID}" != "" ]]; then
@@ -154,10 +153,10 @@ function addUserToGitGroup() {
   unset COMMAND
   THIS_USER_ID="${1}"
   THIS_GROUP_ID="${2}"
-  COMMAND="curl --silent --request POST --header 'PRIVATE-TOKEN: ${GIT_TOKEN}' \
-     --data 'user_id=${THIS_USER_ID}' \
-     --data 'access_level=50' \
-     https://${GIT_DOMAIN}/api/v4/groups/${THIS_GROUP_ID}/members"
+  COMMAND="http --print=b POST https://${GIT_DOMAIN}/api/v4/groups/${THIS_GROUP_ID}/members \
+     user_id==${THIS_USER_ID} \
+     access_level==50 \
+     PRIVATE-TOKEN: ${GIT_TOKEN}"
   COMMAND_RESPONSE=$(eval ${COMMAND})
   #echo "COMMAND_RESPONSE=${COMMAND_RESPONSE}"
 }
@@ -165,7 +164,7 @@ function addUserToGitGroup() {
 function ensureUserInGroup() {
   THIS_ADMIN_ID="${1}"
   THIS_GROUP_ID="${2}"
-  COMMAND="curl --silent --request GET --header 'PRIVATE-TOKEN: ${GIT_TOKEN}' https://${GIT_DOMAIN}/api/v4/groups/${THIS_GROUP_ID}/members/${THIS_ADMIN_ID}"
+  COMMAND="http --print=b GET https://${GIT_DOMAIN}/api/v4/groups/${THIS_GROUP_ID}/members/${THIS_ADMIN_ID} PRIVATE-TOKEN:${GIT_TOKEN}"
   POLL_FOR_USER_IN_GROUP=$(eval ${COMMAND})
   POLL_RESULT=$(echo ${POLL_FOR_USER_IN_GROUP})
   if [[ "${POLL_RESULT}" != *"404"* ]]; then
@@ -183,14 +182,14 @@ function ensureUserInGroup() {
 function addProjectToGit() {
   unset COMMAND
   THIS_PATH_ORIGNAL_PROJECT_NAME="${1}"
-  COMMAND="curl --silent --request POST --header 'PRIVATE-TOKEN: ${GIT_TOKEN}' \
-     --data 'name=${DISPLAY_NAME}' \
-     --data 'path=${THIS_PATH_ORIGNAL_PROJECT_NAME}' \
-     --data 'namespace_id=${GROUP_ID}' \
-     --data 'visibility=private' \
-     --data 'lfs_enabled=false' \
-     --data 'container_registry_enabled=true' \
-     https://${GIT_DOMAIN}/api/v4/projects"
+  COMMAND="http --print=b POST https://${GIT_DOMAIN}/api/v4/projects \
+     name=${DISPLAY_NAME} \
+     path=${THIS_PATH_ORIGNAL_PROJECT_NAME} \
+     namespace_id=${GROUP_ID} \
+     visibility=private \
+     lfs_enabled=false \
+     container_registry_enabled=true \
+     PRIVATE-TOKEN:${GIT_TOKEN}"
   COMMAND_RESPONSE=$(eval ${COMMAND})
   #echo "COMMAND_RESPONSE = ${COMMAND_RESPONSE}"
   PROJECT_ID="$(echo ${COMMAND_RESPONSE} | jq -r .id)"
@@ -200,7 +199,7 @@ function ensureProjectExists() {
   unset COMMAND
   THIS_PATH_ORIGNAL_PROJECT_NAME="${1}"
   THIS_DISPLAY_NAME="${2}"
-  COMMAND="curl --silent --request GET --header 'PRIVATE-TOKEN: ${GIT_TOKEN}' https://${GIT_DOMAIN}/api/v4/projects?search=${THIS_PATH_ORIGNAL_PROJECT_NAME}"
+  COMMAND="curl --print=b GET https://${GIT_DOMAIN}/api/v4/projects search==${THIS_PATH_ORIGNAL_PROJECT_NAME} PRIVATE-TOKEN:${GIT_TOKEN}"
   POLL_FOR_PROJECT=$(eval ${COMMAND})
   #echo "POLL_FOR_PROJECT = ${POLL_FOR_PROJECT}"
   if [[ "${POLL_FOR_PROJECT}" != "[]" ]]; then
@@ -220,11 +219,8 @@ function ensureProjectExists() {
 
 
 ensureGitAdminUserExists "${ADMIN_USER}"
-exit 0
-
 ensureGitGroupExists "${CUSTOMER_ID}"
 ensureUserInGroup "${ADMIN_ID}" "${GROUP_ID}"
-
 ensureProjectExists "${PATH_ORIGNAL_PROJECT_NAME}" "${DISPLAY_NAME}"
 
 
