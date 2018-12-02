@@ -7,7 +7,7 @@ ENV KUBECONFIG /var/www/html/.kube/config
 
 # Install Apache webserver, no docs, then cleanup right away
 RUN yum install epel-release -y && \
-    yum install httpd wget jq python-pip -y && \
+    yum install httpd wget jq python-pip nss_wrapper gettext -y && \
     yum clean all && \
     pip install httpie
 
@@ -15,6 +15,8 @@ RUN yum install epel-release -y && \
 COPY ["index.html", "style.css", "/var/www/cgi-bin/"]
 COPY ["account_setup.sh", "/var/www/cgi-bin/"]
 COPY ["gitlab_setup.sh", "/var/www/cgi-bin/"]
+COPY ["passwd.template", "/usr/share/httpd"]
+COPY ["fix-script.sh", "/tmp/"]
 
 # Perform some updates to the httpd.conf, set up ownerships, and push logs to stdout and stderr
 RUN sed -i "s/#AddHandler cgi-script .cgi/AddHandler cgi-script .html/g" /etc/httpd/conf/httpd.conf && \
