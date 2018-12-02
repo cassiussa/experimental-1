@@ -34,14 +34,6 @@ ORIGNAL_PROJECT_NAME="$(echo ${ORIGNAL_PROJECT_NAME} | sed 's/ \+/-/g')"
 ### Account-level groups and accounts
 ADMIN_GROUP="admin-group-${CUSTOMER_ID}" # Group has full permissions over all this customer's Projects' dev, qa, and prod environments
 ADMIN_USER="admin-user-${CUSTOMER_ID}" # Member of the account-admin-group-N group
-PROD_GROUP="prod-group-${CUSTOMER_ID}" # Group that can perform PROD-environment functions accross all Projects owned by this customer
-QA_GROUP="qa-group-${CUSTOMER_ID}" #Group that can perform QA-environment functions accross all Projects owned by this customer
-DEV_GROUP="dev-group-${CUSTOMER_ID}" #Group that can perform DEV-environment functions accross all Projects owned by this customer
-### Project-level groups and accounts
-PROJECT_ADMIN_GROUP="admin-group-${PROJECT_NAME}" # Group has full permissions over the dev, qa, prod Projects for this Project
-PROJECT_PROD_GROUP="prod-group-${PROJECT_NAME}"
-PROJECT_QA_GROUP="qa-group-${PROJECT_NAME}"
-PROJECT_DEV_GROUP="dev-group-${PROJECT_NAME}"
 
 
 function outputMode() {
@@ -88,28 +80,10 @@ outputMode "####################################################"
 GIT_TOKEN="kVzRHEy3nzz8EPsZgK_h"
 GIT_DOMAIN="git.app.okd.supercass.com"
 
-
-# RETRY COMMAND INSTEAD OF JUST FAILING FIRST ATTEMPT
-# Accepts 3 parameters: ${1} Number of retries, ${2} time between retries, ${3} command to run
-function gitRetryCommand() {
-  # Iterate over the number of retries passed into the retryCommand function as 1st parameter
-  for retries in $(seq 1 $(echo "${1}")); do
-    # Run the command ${3} parameter.  If it succeeds, return from function.  Otherwise echo failed and then retry ${1} number of times
-    # Wow, what a hack below.  Here be dragons
-    (RESULT=$(eval "${3}" && echo "${RESULT}"; return $?) && echo "${RESULT}") && return
-    [[ "${retries}" > 1 ]] && outputMode "Trying again in ${2} seconds"
-    sleep ${2}
-    # Exit out completely if we've failed to run the command ${1} times
-    # Error Code #400
-    [[ "${retries}" == "${1}" ]] && return 1
-  done
-}
-
-
-
 ADMIN_ID=""
 GROUP_ID=""
 PROJECT_ID=""
+
 
 function createGitAdminUser() {
   unset COMMAND
@@ -129,10 +103,10 @@ function createGitAdminUser() {
 function ensureGitAdminUserExists() {
   THIS_ADMIN_USER="${1}"
   outputMode "-------------- COMMAND -------------"
-  curl --silent --request GET 'https://${GIT_DOMAIN}/api/v4/users?username=${THIS_ADMIN_USER}' --header 'PRIVATE-TOKEN: ${GIT_TOKEN}'
+  outputMode "=============== $(curl --silent --request GET 'https://${GIT_DOMAIN}/api/v4/users?username=${THIS_ADMIN_USER}' --header 'PRIVATE-TOKEN: ${GIT_TOKEN}') ================"
   outputMode "------------DONE COMMAND -----------"
   COMMAND="curl --silent --request GET 'https://${GIT_DOMAIN}/api/v4/users?username=${THIS_ADMIN_USER}' --header 'PRIVATE-TOKEN: ${GIT_TOKEN}'"
-  POLL_FOR_USER="$(eval ${COMMAND})"
+  POLL_FOR_USER="$(eval \"${COMMAND}\")"
   if [[ "${POLL_FOR_USER}" != "[]" ]]; then
     ADMIN_ID=$(echo ${POLL_FOR_USER} | jq -r ".[].id")
     outputMode "The admin '${THIS_ADMIN_USER}' already exists. Skipping..."
