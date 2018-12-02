@@ -6,3 +6,6 @@ export NSS_WRAPPER_PASSWD=/tmp/passwd
 export NSS_WRAPPER_GROUP=/etc/group
 
 
+/usr/sbin/httpd -D FOREGROUND -f /etc/httpd/conf/httpd.conf
+
+
