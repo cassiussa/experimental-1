@@ -183,7 +183,7 @@ function addProjectToGit() {
   unset COMMAND
   THIS_PATH_ORIGNAL_PROJECT_NAME="${1}"
   COMMAND="http --print=b POST https://${GIT_DOMAIN}/api/v4/projects \
-     name==${DISPLAY_NAME} \
+     name=="${DISPLAY_NAME}" \
      path==${THIS_PATH_ORIGNAL_PROJECT_NAME} \
      namespace_id==${GROUP_ID} \
      visibility==private \
@@ -191,12 +191,10 @@ function addProjectToGit() {
      container_registry_enabled==true \
      PRIVATE-TOKEN:${GIT_TOKEN}"
   COMMAND_RESPONSE=$(eval ${COMMAND})
-  #echo "COMMAND_RESPONSE = ${COMMAND_RESPONSE}"
   PROJECT_ID="$(echo ${COMMAND_RESPONSE} | jq -r .id)"
 }
 
 function ensureProjectExists() {
-  unset COMMAND
   THIS_PATH_ORIGNAL_PROJECT_NAME="${1}"
   THIS_DISPLAY_NAME="${2}"
   COMMAND="http --print=b GET https://${GIT_DOMAIN}/api/v4/projects search==${THIS_PATH_ORIGNAL_PROJECT_NAME} PRIVATE-TOKEN:${GIT_TOKEN}"
