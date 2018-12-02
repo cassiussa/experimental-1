@@ -355,7 +355,6 @@ function groupPermissions() {
 
 
 
-#${GIT_PREFIX}.${APP_DOMAIN}
 function createGitSecret() {
   ocLogin
   THIS_SECRET="${1}"
