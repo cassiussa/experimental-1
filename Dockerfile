@@ -33,9 +33,7 @@ RUN sed -i "s/#AddHandler cgi-script .cgi/AddHandler cgi-script .html/g" /etc/ht
     touch /var/www/html/.kube/config && \
     chmod -R 755 /var/www/html && \
     chown -R apache /var/www/cgi-bin && \
-    chmod 755 /var/www/cgi-bin/index.html && \
-    chmod 555 /var/www/cgi-bin/account_setup.sh && \
-    chmod 555 /var/www/cgi-bin/gitlab_setup.sh && \
+    chmod -R 755 /var/www/cgi-bi && \
     chgrp -R 0 /var/www && chmod -R g=u /var/www && \
     chgrp -R 0 /usr/local/etc && chmod -R g=u /usr/local/etc && \
     chgrp -R 0 /run/httpd  && chmod -R g=u /run/httpd && \
