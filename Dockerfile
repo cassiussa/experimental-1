@@ -7,7 +7,7 @@ ENV KUBECONFIG /var/www/html/.kube/config
 
 # Install Apache webserver, no docs, then cleanup right away
 RUN yum install epel-release -y && \
-    yum install httpd wget jq python-pip nss_wrapper gettext -y && \
+    yum install httpd wget jq python-pip nss_wrapper gettext openssh -y && \
     yum clean all && \
     pip install httpie
 

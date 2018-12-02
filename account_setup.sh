@@ -349,7 +349,8 @@ function groupPermissions() {
   ensureAdminGroupExists ${THIS_ENVIRONMENT_GROUP}-${THIS_ORIGNAL_PROJECT_NAME}
   ensureAdminGroupPermissions "${THIS_ENVIRONMENT}" "${THIS_PROJECT_NAME}" "${THIS_ENVIRONMENT_GROUP}-${THIS_ORIGNAL_PROJECT_NAME}"
   # Grant admin access to the application-level admin group (ex: dev, qa and prod)
-  ensureAdminGroupPermissions "${THIS_ENVIRONMENT}" "${THIS_PROJECT_NAME}" "${THIS_ADMIN_GROUP}-${THIS_ORIGNAL_PROJECT_NAME}"
+  # TODO: Unsure about this next one.  What it?
+  ensureAdminGroupPermissions "${THIS_ENVIRONMENT}" "${THIS_PROJECT_NAME}" "${THIS_ADMIN_GROUP}"
 }
 
 
@@ -385,7 +386,7 @@ function ensureGitSecretExists() {
     return
   else
     outputMode "Creating new secret: ${THIS_SECRET}"
-    createGitSecret "${THIS_PROJECT_NAMESPACE}" "${THIS_CUSTOMER_ID}"
+    createGitSecret "${THIS_SECRET}" "${THIS_PROJECT_NAMESPACE}" "${THIS_CUSTOMER_ID}"
     CREATE_SECRET_RESPONSE=$?
     [[ ${CREATE_SECRET_RESPONSE} ]] && outputMode "Created secret '${THIS_SECRET}'"; return || errorExit "Unable to create secret ${THIS_SECRET}"
   fi
