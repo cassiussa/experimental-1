@@ -199,7 +199,7 @@ function ensureProjectExists() {
   unset COMMAND
   THIS_PATH_ORIGNAL_PROJECT_NAME="${1}"
   THIS_DISPLAY_NAME="${2}"
-  COMMAND="curl --print=b GET https://${GIT_DOMAIN}/api/v4/projects search==${THIS_PATH_ORIGNAL_PROJECT_NAME} PRIVATE-TOKEN:${GIT_TOKEN}"
+  COMMAND="http --print=b GET https://${GIT_DOMAIN}/api/v4/projects search==${THIS_PATH_ORIGNAL_PROJECT_NAME} PRIVATE-TOKEN:${GIT_TOKEN}"
   POLL_FOR_PROJECT=$(eval ${COMMAND})
   #echo "POLL_FOR_PROJECT = ${POLL_FOR_PROJECT}"
   if [[ "${POLL_FOR_PROJECT}" != "[]" ]]; then
