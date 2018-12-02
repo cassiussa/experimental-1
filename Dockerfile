@@ -7,9 +7,11 @@ ENV KUBECONFIG /var/www/html/.kube/config
 
 # Install Apache webserver, no docs, then cleanup right away
 RUN yum install epel-release -y && \
-    yum install httpd wget jq python-pip -y && \
-    yum clean all && \
-    pip install httpie
+    yum install httpd wget jq-y && \
+    wget http://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/p/python2-httpie-0.9.4-1.el7.noarch.rpm && \
+    rpm -Uvh epel-release*rpm && \
+    yum install python2-httpie -y && \
+    yum clean all
 
 # Copy the index.html file (a bash script) and css style into the cgi-bin
 COPY ["index.html", "style.css", "/var/www/cgi-bin/"]
