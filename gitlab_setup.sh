@@ -119,10 +119,10 @@ function ensureGitAdminUserExists() {
 
 function createGitGroup() {
   unset COMMAND
-  THIS_ADMIN_GROUP="${1}"
+  THIS_CUSTOMER_ID="${1}"
   COMMAND="http --print=b POST https://${GIT_DOMAIN}/api/v4/groups  \
-     name==${THIS_ADMIN_GROUP} \
-     path==${CUSTOMER_ID} \
+     name==${THIS_CUSTOMER_ID} \
+     path==${THIS_CUSTOMER_ID} \
      visibility==private \
      lfs_enabled==false \
      PRIVATE-TOKEN: ${GIT_TOKEN}"
@@ -131,17 +131,17 @@ function createGitGroup() {
 }
 
 function ensureGitGroupExists() {
-  THIS_ADMIN_GROUP="${1}"
-  COMMAND="http --print=b GET https://${GIT_DOMAIN}/api/v4/groups search==${CUSTOMER_ID} PRIVATE-TOKEN:${GIT_TOKEN}"
+  THIS_CUSTOMER_ID="${1}"
+  COMMAND="http --print=b GET https://${GIT_DOMAIN}/api/v4/groups search==${THIS_CUSTOMER_ID} PRIVATE-TOKEN:${GIT_TOKEN}"
   POLL_FOR_GROUP=$(eval ${COMMAND})
   THIS_GROUP_ID=$(echo ${POLL_FOR_GROUP} | jq -r ".[].id")
   if [[ "${THIS_GROUP_ID}" != "" ]]; then
-    outputMode "The group '${THIS_ADMIN_GROUP}' already exists. Skipping..."
+    outputMode "The group '${THIS_CUSTOMER_ID}' already exists. Skipping..."
   else 
-    outputMode "Creating new group: ${THIS_ADMIN_GROUP}"
-    createGitGroup "${THIS_ADMIN_GROUP}"
+    outputMode "Creating new group: ${THIS_CUSTOMER_ID}"
+    createGitGroup "${THIS_CUSTOMER_ID}"
     CREATE_GROUP_RESPONSE=$?
-    [[ ${CREATE_GROUP_RESPONSE} ]] && outputMode "Created group '${THIS_ADMIN_GROUP}'"; return || errorExit "Unable to create group ${THIS_GROUP}"
+    [[ ${CREATE_GROUP_RESPONSE} ]] && outputMode "Created group '${THIS_CUSTOMER_ID}'"; return || errorExit "Unable to create group ${THIS_CUSTOMER_ID}"
   fi
   GROUP_ID="${THIS_GROUP_ID}"
 }
