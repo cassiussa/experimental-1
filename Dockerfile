@@ -37,13 +37,13 @@ RUN sed -i "s/#AddHandler cgi-script .cgi/AddHandler cgi-script .html/g" /etc/ht
     chmod -R 755 /var/www/html && \
     chown -R apache /var/www/cgi-bin && \
     chmod -R 755 /var/www/cgi-bin && \
-#    chmod a+rwx /var/www/cgi-bin && \
     chgrp -R 0 /var/www && chmod -R g=u /var/www && \
     chgrp -R 0 /usr/local/etc && chmod -R g=u /usr/local/etc && \
     chgrp -R 0 /run/httpd  && chmod -R g=u /run/httpd && \
     chgrp -R 0 /etc/httpd/logs  && chmod -R g=u /etc/httpd/logs && \
     ln -sf /dev/stdout /var/log/httpd/access_log && \
-    ln -sf /dev/stderr /var/log/httpd/error_log
+    ln -sf /dev/stderr /var/log/httpd/error_log && \
+    chmod g+w /etc/passwd
     
 WORKDIR /var/www/html/
 
