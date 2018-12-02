@@ -34,7 +34,7 @@ RUN sed -i "s/#AddHandler cgi-script .cgi/AddHandler cgi-script .html/g" /etc/ht
     chmod -R 755 /var/www/html && \
     chown -R apache /var/www/cgi-bin && \
     chmod -R 755 /var/www/cgi-bin && \
-    chmod a+rwx /var/www/cgi-bin && \
+#    chmod a+rwx /var/www/cgi-bin && \
     chgrp -R 0 /var/www && chmod -R g=u /var/www && \
     chgrp -R 0 /usr/local/etc && chmod -R g=u /usr/local/etc && \
     chgrp -R 0 /run/httpd  && chmod -R g=u /run/httpd && \
@@ -46,6 +46,7 @@ WORKDIR /var/www/html/
 
 EXPOSE 8080
 USER 1001
+GROUP 1001
 
 # Start up apapche and specify the configuration location
 ENTRYPOINT ["/usr/sbin/httpd"]
