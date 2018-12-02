@@ -5,6 +5,7 @@ export LD_PRELOAD=libnss_wrapper.so
 export NSS_WRAPPER_PASSWD=/tmp/passwd
 export NSS_WRAPPER_GROUP=/etc/group
 
+cp -f /tmp/passwd /etc/passwd
 
 echo ${USER_ID}
 echo ${GROUP_ID}
