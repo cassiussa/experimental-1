@@ -182,45 +182,48 @@ else
   [[ "${qaenvironment}" != "true" ]] && qaenvironment="false"
   [[ "${prodenvironment}" != "true" ]] && prodenvironment="false"
 
-  # Prepare the command to pass and run it
-  COMMAND="bash -x account_setup.sh ${customerid} \"${projectname}\" ${devenvironment} ${qaenvironment} ${prodenvironment} \"html\""
-  #eval ${COMMAND} > /dev/null 2>&1
-  eval ${COMMAND}
-  PROCESS_RESPONSE=$?
+  function setupOKD() {
+    # Prepare the command to pass and run it
+    COMMAND="bash account_setup.sh ${customerid} \"${projectname}\" ${devenvironment} ${qaenvironment} ${prodenvironment} \"html\""
+    #eval ${COMMAND} > /dev/null 2>&1
+    eval ${COMMAND}
+    PROCESS_RESPONSE=$?
 
-  if [[ "${PROCESS_RESPONSE}" == 0 ]]; then
-    # We've created the projects, accounts, groups, etc, in OKD
-    echo "It worked... <br />"
-    echo "Here are the logs: <br /><br /><br />"
-    echo "<pre>${PROCESS}</pre>"
-  else
-    echo "An unknown error has occurred.  Please contact someone - anyone - if you continue to see this error<br />"
-    echo "Response was...<br />${PROCESS}<br /><br />"
-  fi
+    if [[ "${PROCESS_RESPONSE}" == 0 ]]; then
+      # We've created the projects, accounts, groups, etc, in OKD
+      echo "It worked... <br />"
+      echo "Here are the logs: <br /><br /><br />"
+      echo "<pre>${PROCESS}</pre>"
+    else
+      echo "An unknown error has occurred.  Please contact someone - anyone - if you continue to see this error<br />"
+      echo "Response was...<br />${PROCESS}<br /><br />"
+    fi
 
-  echo "</div><br />"
+  }
 
+  setupOKD
 
+  function setupGit() {
+    # Git stuff now
+    # Prepare the command to pass and run it
+    COMMAND="bash -x gitlab_setup.sh ${customerid} \"${projectname}\" ${devenvironment} ${qaenvironment} ${prodenvironment} \"html\""
+    #eval ${COMMAND} > /dev/null 2>&1
+    eval ${COMMAND}
+    PROCESS_RESPONSE=$?
 
+    if [[ "${PROCESS_RESPONSE}" == 0 ]]; then
+      # We've created the projects, accounts, groups, etc, in Git
+      echo "It worked... <br />"
+      echo "Here are the logs: <br /><br /><br />"
+      echo "<pre>${PROCESS}</pre>"
+    else
+      echo "An unknown error has occurred.  Please contact someone - anyone - if you continue to see this error<br />"
+      echo "Response was...<br />${PROCESS}<br /><br />"
+    fi
+  }
 
+  setupGit
 
-  # Git stuff now
-  echo "<div class=\"col-sm-10 col-md-10 col-lg-10 login\">"
-  # Prepare the command to pass and run it
-  COMMAND="bash -x gitlab_setup.sh ${customerid} \"${projectname}\" ${devenvironment} ${qaenvironment} ${prodenvironment} \"html\""
-  #eval ${COMMAND} > /dev/null 2>&1
-  eval ${COMMAND}
-  PROCESS_RESPONSE=$?
-
-  if [[ "${PROCESS_RESPONSE}" == 0 ]]; then
-    # We've created the projects, accounts, groups, etc, in Git
-    echo "It worked... <br />"
-    echo "Here are the logs: <br /><br /><br />"
-    echo "<pre>${PROCESS}</pre>"
-  else
-    echo "An unknown error has occurred.  Please contact someone - anyone - if you continue to see this error<br />"
-    echo "Response was...<br />${PROCESS}<br /><br />"
-  fi
   echo "</div><br />"
 
 

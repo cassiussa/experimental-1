@@ -183,7 +183,7 @@ function addProjectToGit() {
   unset COMMAND
   THIS_PATH_ORIGNAL_PROJECT_NAME="${1}"
   COMMAND="http --print=b POST https://${GIT_DOMAIN}/api/v4/projects \
-     name=="${DISPLAY_NAME}" \
+     name=='${DISPLAY_NAME}' \
      path==${THIS_PATH_ORIGNAL_PROJECT_NAME} \
      namespace_id==${GROUP_ID} \
      visibility==private \
