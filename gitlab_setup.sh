@@ -125,7 +125,7 @@ function createGitGroup() {
      path==${THIS_CUSTOMER_ID} \
      visibility==private \
      lfs_enabled==false \
-     PRIVATE-TOKEN: ${GIT_TOKEN}"
+     PRIVATE-TOKEN:${GIT_TOKEN}"
    COMMAND_RESPONSE=$(eval ${COMMAND})
    GROUP_ID="$(echo ${COMMAND_RESPONSE} | jq -r .id)"
 }
@@ -156,7 +156,7 @@ function addUserToGitGroup() {
   COMMAND="http --print=b POST https://${GIT_DOMAIN}/api/v4/groups/${THIS_GROUP_ID}/members \
      user_id==${THIS_USER_ID} \
      access_level==50 \
-     PRIVATE-TOKEN: ${GIT_TOKEN}"
+     PRIVATE-TOKEN:${GIT_TOKEN}"
   COMMAND_RESPONSE=$(eval ${COMMAND})
   #echo "COMMAND_RESPONSE=${COMMAND_RESPONSE}"
 }
@@ -183,12 +183,12 @@ function addProjectToGit() {
   unset COMMAND
   THIS_PATH_ORIGNAL_PROJECT_NAME="${1}"
   COMMAND="http --print=b POST https://${GIT_DOMAIN}/api/v4/projects \
-     name=${DISPLAY_NAME} \
-     path=${THIS_PATH_ORIGNAL_PROJECT_NAME} \
-     namespace_id=${GROUP_ID} \
-     visibility=private \
-     lfs_enabled=false \
-     container_registry_enabled=true \
+     name==${DISPLAY_NAME} \
+     path==${THIS_PATH_ORIGNAL_PROJECT_NAME} \
+     namespace_id==${GROUP_ID} \
+     visibility==private \
+     lfs_enabled==false \
+     container_registry_enabled==true \
      PRIVATE-TOKEN:${GIT_TOKEN}"
   COMMAND_RESPONSE=$(eval ${COMMAND})
   #echo "COMMAND_RESPONSE = ${COMMAND_RESPONSE}"
@@ -201,7 +201,6 @@ function ensureProjectExists() {
   THIS_DISPLAY_NAME="${2}"
   COMMAND="http --print=b GET https://${GIT_DOMAIN}/api/v4/projects search==${THIS_PATH_ORIGNAL_PROJECT_NAME} PRIVATE-TOKEN:${GIT_TOKEN}"
   POLL_FOR_PROJECT=$(eval ${COMMAND})
-  #echo "POLL_FOR_PROJECT = ${POLL_FOR_PROJECT}"
   if [[ "${POLL_FOR_PROJECT}" != "[]" ]]; then
     PROJECT_ID=$(echo ${POLL_FOR_PROJECT} | jq -r ".[0].id")
     outputMode "The project '${THIS_PATH_ORIGNAL_PROJECT_NAME}' already exists. Skipping..."
