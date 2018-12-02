@@ -15,7 +15,7 @@ RUN yum install epel-release -y && \
 COPY ["index.html", "style.css", "/var/www/cgi-bin/"]
 COPY ["account_setup.sh", "/var/www/cgi-bin/"]
 COPY ["gitlab_setup.sh", "/var/www/cgi-bin/"]
-COPY ["passwd.template", "/usr/share/httpd"]
+COPY ["passwd.template", "/var/www/html/"]
 COPY ["fix-script.sh", "/tmp/"]
 
 # Perform some updates to the httpd.conf, set up ownerships, and push logs to stdout and stderr
