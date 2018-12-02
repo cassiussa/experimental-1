@@ -128,8 +128,11 @@ function createGitAdminUser() {
 
 function ensureGitAdminUserExists() {
   THIS_ADMIN_USER="${1}"
-  COMMAND="curl --silent --request GET https://${GIT_DOMAIN}/api/v4/users?username=${ADMIN_USER} --header 'PRIVATE-TOKEN: ${GIT_TOKEN}'"
-  POLL_FOR_USER=$(eval ${COMMAND})
+  outputMode "-------------- COMMAND -------------"
+  curl --silent --request GET 'https://${GIT_DOMAIN}/api/v4/users?username=${THIS_ADMIN_USER}' --header 'PRIVATE-TOKEN: ${GIT_TOKEN}'
+  outputMode "------------DONE COMMAND -----------"
+  COMMAND="curl --silent --request GET 'https://${GIT_DOMAIN}/api/v4/users?username=${THIS_ADMIN_USER}' --header 'PRIVATE-TOKEN: ${GIT_TOKEN}'"
+  POLL_FOR_USER="$(eval ${COMMAND})"
   if [[ "${POLL_FOR_USER}" != "[]" ]]; then
     ADMIN_ID=$(echo ${POLL_FOR_USER} | jq -r ".[].id")
     outputMode "The admin '${THIS_ADMIN_USER}' already exists. Skipping..."
