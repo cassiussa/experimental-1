@@ -1,5 +1,9 @@
 #!/bin/bash
 
+APP_DOMAIN="app.okd.supercass.com"
+ACCOUNTS_PREFIX="accounts"
+GIT_PREFIX="git"
+
 # Customer ID
 ID="${1}"
 # Name of the Project (namespace)
@@ -351,6 +355,41 @@ function groupPermissions() {
 
 
 
+#${GIT_PREFIX}.${APP_DOMAIN}
+function createGitSecret() {
+  ocLogin
+  THIS_SECRET="${1}"
+  THIS_PROJECT_NAMESPACE="${2}"
+  THIS_CUSTOMER_ID="${3}"
+  unset COMMAND
+  COMMAND="ssh-keygen -C \"git-source-builder/${THIS_PROJECT_NAMESPACE}@${GIT_PREFIX}.${APP_DOMAIN}\" -f /tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET} -N '' && \
+           oc create secret generic ${THIS_SECRET} --from-file=ssh-privatekey=/tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET} --type=kubernetes.io/ssh-auth -n ${THIS_PROJECT_NAMESPACE} && \
+           cat /tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET}.pub && \
+           rm -rf /tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET}*"
+  eval ${COMMAND} > /dev/null && return
+}
+
+
+function ensureGitSecretExists() {
+  THIS_SECRET="${1}"
+  THIS_PROJECT_NAMESPACE="${2}"
+  THIS_CUSTOMER_ID="${3}"
+  POLL_FOR_SECRET="oc get secret ${THIS_SECRET} -n ${THIS_PROJECT_NAMESPACE}"
+  retryCommand "1" "3" "${POLL_FOR_SECRET}"
+  POLL_FOR_SECRET_RESPONSE=$?
+  if [[ "${POLL_FOR_SECRET_RESPONSE}" == 0 ]]; then
+    outputMode "The secret '${THIS_SECRET}' already exists. Skipping..."
+    return
+  else
+    outputMode "Creating new secret: ${THIS_SECRET}"
+    createGitSecret "${THIS_PROJECT_NAMESPACE}" "${THIS_CUSTOMER_ID}"
+    CREATE_SECRET_RESPONSE=$?
+    [[ ${CREATE_SECRET_RESPONSE} ]] && outputMode "Created secret '${THIS_SECRET}'"; return || errorExit "Unable to create secret ${THIS_SECRET}"
+}
+
+
+
+
 # Admin User
 outputMode "ensureAdminUserExist"
 ensureAdminUserExist ${ADMIN_USER}
@@ -391,6 +430,9 @@ if [[ "${ENABLE_DEV}" == true ]]; then
 
   outputMode "annotateObject \"group\" \"${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}\" \"7L.com/projects\" \"${PROJECT_NAME}-dev\""
   annotateObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-dev"
+
+  # Generate Git Secret
+  ensureGitSecretExists "git-source-builder-key" "${PROJECT_NAME}-dev" "${CUSTOMER_ID}"
 fi
 
 if [[ "${ENABLE_QA}" == true ]]; then
@@ -431,6 +473,7 @@ addUserToGroup "${PROJECT_ADMIN_GROUP}" "${ADMIN_USER}"
 
 
 outputMode "DONE OKD ACCOUNTS, PROJECTS, GROUPS, PERMISSIONS"
+
 
 
 
