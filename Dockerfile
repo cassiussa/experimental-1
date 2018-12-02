@@ -7,7 +7,7 @@ ENV KUBECONFIG /var/www/html/.kube/config
 
 # Install Apache webserver, no docs, then cleanup right away
 RUN yum install epel-release -y && \
-    yum install httpd wget jq-y && \
+    yum install httpd wget jq -y && \
     wget http://dl.fedoraproject.org/pub/epel/7/x86_64/Packages/p/python2-httpie-0.9.4-1.el7.noarch.rpm && \
     rpm -Uvh epel-release*rpm && \
     yum install python2-httpie -y && \
