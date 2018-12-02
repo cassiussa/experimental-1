@@ -46,7 +46,6 @@ WORKDIR /var/www/html/
 
 EXPOSE 8080
 USER 1001
-GROUP 1001
 
 # Start up apapche and specify the configuration location
 ENTRYPOINT ["/usr/sbin/httpd"]
