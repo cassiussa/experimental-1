@@ -69,6 +69,12 @@ if [[ "${ENABLE_DEV}" == "false" && "${ENABLE_QA}" == "false" && "${ENABLE_PROD}
 fi
 
 
+# LOGIN TO CLUSTER
+function ocLogin() {
+  LOGIN_COMMAND="oc login https://m.okd.supercass.com -u ${OKD_USERNAME} -p ${OKD_PASSWORD} --insecure-skip-tls-verify=true"
+  # Error Code #394 - could not log into the OKD cluster using the oc command
+  eval "${LOGIN_COMMAND}" > /dev/null && return || errorExit "Unable to process request. Please contact support and provide Error Code #394."
+}
 
 
 outputMode "####################################################"
@@ -220,7 +226,7 @@ function createGitDeployKey() {
   THIS_SECRET="${2}"
   THIS_PROJECT_NAMESPACE="${3}"
   ocLogin
-  THIS_SECRET_PUBLIC_KEY=$(oc get secrets git-source-builder-key -o=jsonpath='{.data.ssh-publickey}' -n ${THIS_PROJECT_NAMESPACE} | base64 -d)
+  THIS_SECRET_PUBLIC_KEY=$(oc get secrets ${THIS_SECRET} -o=jsonpath='{.data.ssh-publickey}' -n ${THIS_PROJECT_NAMESPACE} | base64 -d)
   COMMAND="http --print=b POST https://${GIT_DOMAIN}/api/v4/projects/${THIS_PROJECT_ID}/deploy_keys  \
      title==${THIS_SECRET} \
      key==${THIS_SECRET_PUBLIC_KEY} \
