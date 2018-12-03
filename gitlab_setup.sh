@@ -229,7 +229,7 @@ function createGitDeployKey() {
   THIS_SECRET_PUBLIC_KEY=$(oc get secrets ${THIS_SECRET} -o=jsonpath='{.data.ssh-publickey}' -n ${THIS_PROJECT_NAMESPACE} | base64 -d)
   COMMAND="http --print=b POST https://${GIT_DOMAIN}/api/v4/projects/${THIS_PROJECT_ID}/deploy_keys  \
      title==${THIS_SECRET} \
-     key==${THIS_SECRET_PUBLIC_KEY} \
+     key=='${THIS_SECRET_PUBLIC_KEY}' \
      can_push==false \
      PRIVATE-TOKEN:${GIT_TOKEN}"
    COMMAND_RESPONSE=$(eval ${COMMAND})
@@ -267,7 +267,7 @@ ensureProjectExists "${PATH_ORIGINAL_PROJECT_NAME}" "${DISPLAY_NAME}"
 
 
 if [[ "${ENABLE_DEV}" == true ]]; then
-  ensureGitDeployKey "${PROJECT_ID}" "git-source-builder-key-dev" "${PATH_ORIGINAL_PROJECT_NAME}"
+  ensureGitDeployKey "${PROJECT_ID}" "git-source-builder-key-dev" "${CUSTOMER_ID}-${PATH_ORIGINAL_PROJECT_NAME}-dev"
 fi
 
 
