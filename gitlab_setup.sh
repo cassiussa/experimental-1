@@ -273,6 +273,7 @@ fi
 
 if [[ "${ENABLE_QA}" == true ]]; then
   outputMode "QA is enabled"
+  ensureGitDeployKey "${PROJECT_ID}" "git-source-builder-key-qa" "${CUSTOMER_ID}-${PATH_ORIGINAL_PROJECT_NAME}-qa"
 fi
 
 
