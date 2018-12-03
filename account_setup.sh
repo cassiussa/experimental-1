@@ -26,12 +26,12 @@ FORMAT="Incorrect invocation of the 'account_setup' script.  :  account_setup.sh
 # Code #394 : Could not log into the cluster using the oc command
 
 # Change to lower case
-ORIGNAL_PROJECT_NAME="${DISPLAY_NAME,,}"
+ORIGINAL_PROJECT_NAME="${DISPLAY_NAME,,}"
 CUSTOMER_ID="${ID}"
-PROJECT_NAME="${CUSTOMER_ID}-${ORIGNAL_PROJECT_NAME}"
+PROJECT_NAME="${CUSTOMER_ID}-${ORIGINAL_PROJECT_NAME}"
 # Replace spaces with -
 PROJECT_NAME="$(echo ${PROJECT_NAME} | sed 's/ \+/-/g')"
-ORIGNAL_PROJECT_NAME="$(echo ${ORIGNAL_PROJECT_NAME} | sed 's/ \+/-/g')"
+ORIGINAL_PROJECT_NAME="$(echo ${ORIGINAL_PROJECT_NAME} | sed 's/ \+/-/g')"
 
 
 ### Account-level groups and accounts
@@ -340,14 +340,14 @@ function groupPermissions() {
   THIS_DISPLAY_NAME="${3}"
   THIS_ADMIN_GROUP="${4}"
   THIS_ENVIRONMENT_GROUP="${5}"
-  THIS_ORIGNAL_PROJECT_NAME="${6}"
+  THIS_ORIGINAL_PROJECT_NAME="${6}"
 
   ensureProjectExists "${THIS_ENVIRONMENT}" "${THIS_PROJECT_NAME}" "${THIS_DISPLAY_NAME}"
   ensureAdminGroupPermissions "${THIS_ENVIRONMENT}" "${THIS_PROJECT_NAME}" "${THIS_ADMIN_GROUP}"
   ensureAdminGroupExists ${THIS_ENVIRONMENT_GROUP}
   ensureAdminGroupPermissions "${THIS_ENVIRONMENT}" "${THIS_PROJECT_NAME}" "${THIS_ENVIRONMENT_GROUP}"
-  ensureAdminGroupExists ${THIS_ENVIRONMENT_GROUP}-${THIS_ORIGNAL_PROJECT_NAME}
-  ensureAdminGroupPermissions "${THIS_ENVIRONMENT}" "${THIS_PROJECT_NAME}" "${THIS_ENVIRONMENT_GROUP}-${THIS_ORIGNAL_PROJECT_NAME}"
+  ensureAdminGroupExists ${THIS_ENVIRONMENT_GROUP}-${THIS_ORIGINAL_PROJECT_NAME}
+  ensureAdminGroupPermissions "${THIS_ENVIRONMENT}" "${THIS_PROJECT_NAME}" "${THIS_ENVIRONMENT_GROUP}-${THIS_ORIGINAL_PROJECT_NAME}"
   # Grant admin access to the application-level admin group (ex: dev, qa and prod)
   # TODO: Unsure about this next one.  What it?
   ensureAdminGroupPermissions "${THIS_ENVIRONMENT}" "${THIS_PROJECT_NAME}" "${THIS_ADMIN_GROUP}"
@@ -410,16 +410,16 @@ ensureAdminGroupExists "${ADMIN_GROUP}"
 outputMode "labelObject \"group\" \"${ADMIN_GROUP}\" \"customerid\" \"${CUSTOMER_ID}\""
 labelObject "group" "${ADMIN_GROUP}" "customerid" "${CUSTOMER_ID}"
 #annotateObject "group" "{ADMIN_GROUP}" "7L.com/projects" "${ADMIN_GROUP}"
-outputMode "ensureAdminGroupExists \"${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}\""
-ensureAdminGroupExists "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}"
-outputMode "labelObject \"group\" \"${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}\" \"customerid\" \"${CUSTOMER_ID}\""
-labelObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
-#annotateObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}"
+outputMode "ensureAdminGroupExists \"${ADMIN_GROUP}-${ORIGINAL_PROJECT_NAME}\""
+ensureAdminGroupExists "${ADMIN_GROUP}-${ORIGINAL_PROJECT_NAME}"
+outputMode "labelObject \"group\" \"${ADMIN_GROUP}-${ORIGINAL_PROJECT_NAME}\" \"customerid\" \"${CUSTOMER_ID}\""
+labelObject "group" "${ADMIN_GROUP}-${ORIGINAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
+#annotateObject "group" "${ADMIN_GROUP}-${ORIGINAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}"
 
 
 if [[ "${ENABLE_DEV}" == true ]]; then
-  outputMode "groupPermissions \"dev\" \"${PROJECT_NAME}\" \"${DISPLAY_NAME}\" \"${ADMIN_GROUP}\" \"${DEV_GROUP}\" \"${ORIGNAL_PROJECT_NAME}\""
-  groupPermissions "dev" "${PROJECT_NAME}" "${DISPLAY_NAME}" "${ADMIN_GROUP}" "${DEV_GROUP}" "${ORIGNAL_PROJECT_NAME}"
+  outputMode "groupPermissions \"dev\" \"${PROJECT_NAME}\" \"${DISPLAY_NAME}\" \"${ADMIN_GROUP}\" \"${DEV_GROUP}\" \"${ORIGINAL_PROJECT_NAME}\""
+  groupPermissions "dev" "${PROJECT_NAME}" "${DISPLAY_NAME}" "${ADMIN_GROUP}" "${DEV_GROUP}" "${ORIGINAL_PROJECT_NAME}"
   # LABELS
   outputMode "labelObject \"namespace\" \"${PROJECT_NAME}-dev\" \"customerid\" \"${CUSTOMER_ID}\""
   labelObject "namespace" "${PROJECT_NAME}-dev" "customerid" "${CUSTOMER_ID}"
@@ -427,46 +427,46 @@ if [[ "${ENABLE_DEV}" == true ]]; then
   labelObject "namespace" "${PROJECT_NAME}-dev" "deployment_environment" "development"
   outputMode "labelObject \"group\" \"${DEV_GROUP}\" \"customerid\" \"${CUSTOMER_ID}\""
   labelObject "group" "${DEV_GROUP}" "customerid" "${CUSTOMER_ID}"
-  outputMode "labelObject \"group\" \"${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}\" \"customerid\" \"${CUSTOMER_ID}\""
-  labelObject "group" "${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
+  outputMode "labelObject \"group\" \"${DEV_GROUP}-${ORIGINAL_PROJECT_NAME}\" \"customerid\" \"${CUSTOMER_ID}\""
+  labelObject "group" "${DEV_GROUP}-${ORIGINAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
   outputMode "annotateObject \"group\" \"${DEV_GROUP}\" \"7L.com/projects\" \"${PROJECT_NAME}-dev\""
   annotateObject "group" "${DEV_GROUP}" "7L.com/projects" "${PROJECT_NAME}-dev"
-  outputMode "annotateObject \"group\" \"${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}\" \"7L.com/projects\" \"${PROJECT_NAME}-dev\""
-  annotateObject "group" "${DEV_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-dev"
+  outputMode "annotateObject \"group\" \"${DEV_GROUP}-${ORIGINAL_PROJECT_NAME}\" \"7L.com/projects\" \"${PROJECT_NAME}-dev\""
+  annotateObject "group" "${DEV_GROUP}-${ORIGINAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-dev"
   outputMode "annotateObject \"group\" \"${ADMIN_GROUP}\" \"7L.com/projects\" \"${PROJECT_NAME}-dev\""
   annotateObject "group" "${ADMIN_GROUP}" "7L.com/projects" "${PROJECT_NAME}-dev"
 
-  outputMode "annotateObject \"group\" \"${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}\" \"7L.com/projects\" \"${PROJECT_NAME}-dev\""
-  annotateObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-dev"
+  outputMode "annotateObject \"group\" \"${ADMIN_GROUP}-${ORIGINAL_PROJECT_NAME}\" \"7L.com/projects\" \"${PROJECT_NAME}-dev\""
+  annotateObject "group" "${ADMIN_GROUP}-${ORIGINAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-dev"
 
   # Generate Git Secret
   ensureGitSecretExists "git-source-builder-key-dev" "${PROJECT_NAME}-dev" "${CUSTOMER_ID}"
 fi
 
 if [[ "${ENABLE_QA}" == true ]]; then
-  groupPermissions "qa" "${PROJECT_NAME}" "${DISPLAY_NAME}" "${ADMIN_GROUP}" "${QA_GROUP}" "${ORIGNAL_PROJECT_NAME}"
+  groupPermissions "qa" "${PROJECT_NAME}" "${DISPLAY_NAME}" "${ADMIN_GROUP}" "${QA_GROUP}" "${ORIGINAL_PROJECT_NAME}"
   # LABELS
   labelObject "namespace" "${PROJECT_NAME}-qa" "customerid" "${CUSTOMER_ID}"
   labelObject "namespace" "${PROJECT_NAME}-qa" "deployment_environment" "quality-assurance"
   labelObject "group" "${QA_GROUP}" "customerid" "${CUSTOMER_ID}"
-  labelObject "group" "${QA_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
+  labelObject "group" "${QA_GROUP}-${ORIGINAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
   annotateObject "group" "${QA_GROUP}" "7L.com/projects" "${PROJECT_NAME}-qa"
-  annotateObject "group" "${QA_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-qa"
+  annotateObject "group" "${QA_GROUP}-${ORIGINAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-qa"
   annotateObject "group" "${ADMIN_GROUP}" "7L.com/projects" "${PROJECT_NAME}-qa"
-  annotateObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-qa"
+  annotateObject "group" "${ADMIN_GROUP}-${ORIGINAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-qa"
 fi
 
 if [[ "${ENABLE_PROD}" == true ]]; then
-  groupPermissions "prod" "${PROJECT_NAME}" "${DISPLAY_NAME}" "${ADMIN_GROUP}" "${PROD_GROUP}" "${ORIGNAL_PROJECT_NAME}"
+  groupPermissions "prod" "${PROJECT_NAME}" "${DISPLAY_NAME}" "${ADMIN_GROUP}" "${PROD_GROUP}" "${ORIGINAL_PROJECT_NAME}"
   # LABELS
   labelObject "namespace" "${PROJECT_NAME}-prod" "customerid" "${CUSTOMER_ID}"
   labelObject "namespace" "${PROJECT_NAME}-prod" "deployment_environment" "production"
   labelObject "group" "${PROD_GROUP}" "customerid" "${CUSTOMER_ID}"
-  labelObject "group" "${PROD_GROUP}-${ORIGNAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
+  labelObject "group" "${PROD_GROUP}-${ORIGINAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
   annotateObject "group" "${PROD_GROUP}" "7L.com/projects" "${PROJECT_NAME}-prod"
-  annotateObject "group" "${PROD_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-prod"
+  annotateObject "group" "${PROD_GROUP}-${ORIGINAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-prod"
   annotateObject "group" "${ADMIN_GROUP}" "7L.com/projects" "${PROJECT_NAME}-prod"
-  annotateObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-prod"
+  annotateObject "group" "${ADMIN_GROUP}-${ORIGINAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-prod"
 fi
 
 
