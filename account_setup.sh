@@ -444,16 +444,29 @@ if [[ "${ENABLE_DEV}" == true ]]; then
 fi
 
 if [[ "${ENABLE_QA}" == true ]]; then
+  outputMode "groupPermissions \"qa\" \"${PROJECT_NAME}\" \"${DISPLAY_NAME}\" \"${ADMIN_GROUP}\" \"${QA_GROUP}\" \"${ORIGINAL_PROJECT_NAME}\""
   groupPermissions "qa" "${PROJECT_NAME}" "${DISPLAY_NAME}" "${ADMIN_GROUP}" "${QA_GROUP}" "${ORIGINAL_PROJECT_NAME}"
   # LABELS
+  outputMode "labelObject \"namespace\" \"${PROJECT_NAME}-qa\" \"customerid\" \"${CUSTOMER_ID}\""
   labelObject "namespace" "${PROJECT_NAME}-qa" "customerid" "${CUSTOMER_ID}"
+  outputMode "labelObject \"namespace\" \"${PROJECT_NAME}-qa\" \"deployment_environment\" \"quality-assurance\""
   labelObject "namespace" "${PROJECT_NAME}-qa" "deployment_environment" "quality-assurance"
+  outputMode "labelObject \"group\" \"${QA_GROUP}\" \"customerid\" \"${CUSTOMER_ID}\""
   labelObject "group" "${QA_GROUP}" "customerid" "${CUSTOMER_ID}"
+  outputMode "labelObject \"group\" \"${QA_GROUP}-${ORIGINAL_PROJECT_NAME}\" \"customerid\" \"${CUSTOMER_ID}\""
   labelObject "group" "${QA_GROUP}-${ORIGINAL_PROJECT_NAME}" "customerid" "${CUSTOMER_ID}"
+  outputMode "annotateObject \"group\" \"${QA_GROUP}\" \"7L.com/projects\" \"${PROJECT_NAME}-qa\""
   annotateObject "group" "${QA_GROUP}" "7L.com/projects" "${PROJECT_NAME}-qa"
+  outputMode "annotateObject \"group\" \"${QA_GROUP}-${ORIGINAL_PROJECT_NAME}\" \"7L.com/projects\" \"${PROJECT_NAME}-qa\""
   annotateObject "group" "${QA_GROUP}-${ORIGINAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-qa"
+  outputMode "annotateObject \"group\" \"${ADMIN_GROUP}\" \"7L.com/projects\" \"${PROJECT_NAME}-qa\""
   annotateObject "group" "${ADMIN_GROUP}" "7L.com/projects" "${PROJECT_NAME}-qa"
+
+  outputMode "annotateObject \"group\" \"${ADMIN_GROUP}-${ORIGINAL_PROJECT_NAME}\" \"7L.com/projects\" \"${PROJECT_NAME}-qa\""
   annotateObject "group" "${ADMIN_GROUP}-${ORIGINAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-qa"
+
+  # Generate Git Secret
+  ensureGitSecretExists "git-source-builder-key-qa" "${PROJECT_NAME}-qa" "${CUSTOMER_ID}"
 fi
 
 if [[ "${ENABLE_PROD}" == true ]]; then
