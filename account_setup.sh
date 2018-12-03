@@ -354,7 +354,7 @@ function groupPermissions() {
 }
 
 
-
+# SECRET_PUBLIC_KEY=""
 
 function createGitSecret() {
   ocLogin
@@ -364,10 +364,13 @@ function createGitSecret() {
   unset COMMAND
   COMMAND="ssh-keygen -C \"git-source-builder/${THIS_PROJECT_NAMESPACE}@${GIT_PREFIX}.${APP_DOMAIN}\" -f /tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET} -N ''"
   eval ${COMMAND} > /dev/null
-  COMMAND="oc create secret generic ${THIS_SECRET} --from-file=ssh-privatekey=/tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET} --type=kubernetes.io/ssh-auth -n ${THIS_PROJECT_NAMESPACE}"
+  COMMAND="oc create secret generic ${THIS_SECRET} \
+           --from-file=ssh-privatekey=/tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET} \
+           --from-file=ssh-publickey=/tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET}.pub \
+           --type=kubernetes.io/ssh-auth \
+           -n ${THIS_PROJECT_NAMESPACE}"
   eval ${COMMAND} > /dev/null
-  COMMAND="cat /tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET}.pub"
-  eval ${COMMAND} > /dev/null
+#  SECRET_PUBLIC_KEY=$(oc get secrets git-source-builder-key -o=jsonpath='{.data.ssh-publickey}' -n ${THIS_PROJECT_NAMESPACE} | base64 -d)
   COMMAND="rm -rf /tmp/${THIS_CUSTOMER_ID}-${THIS_SECRET}*"
   eval ${COMMAND} > /dev/null
   return
@@ -418,7 +421,7 @@ if [[ "${ENABLE_DEV}" == true ]]; then
   outputMode "groupPermissions \"dev\" \"${PROJECT_NAME}\" \"${DISPLAY_NAME}\" \"${ADMIN_GROUP}\" \"${DEV_GROUP}\" \"${ORIGNAL_PROJECT_NAME}\""
   groupPermissions "dev" "${PROJECT_NAME}" "${DISPLAY_NAME}" "${ADMIN_GROUP}" "${DEV_GROUP}" "${ORIGNAL_PROJECT_NAME}"
   # LABELS
-    outputMode "labelObject \"namespace\" \"${PROJECT_NAME}-dev\" \"customerid\" \"${CUSTOMER_ID}\""
+  outputMode "labelObject \"namespace\" \"${PROJECT_NAME}-dev\" \"customerid\" \"${CUSTOMER_ID}\""
   labelObject "namespace" "${PROJECT_NAME}-dev" "customerid" "${CUSTOMER_ID}"
   outputMode "labelObject \"namespace\" \"${PROJECT_NAME}-dev\" \"deployment_environment\" \"development\""
   labelObject "namespace" "${PROJECT_NAME}-dev" "deployment_environment" "development"
@@ -437,7 +440,7 @@ if [[ "${ENABLE_DEV}" == true ]]; then
   annotateObject "group" "${ADMIN_GROUP}-${ORIGNAL_PROJECT_NAME}" "7L.com/projects" "${PROJECT_NAME}-dev"
 
   # Generate Git Secret
-  ensureGitSecretExists "git-source-builder-key" "${PROJECT_NAME}-dev" "${CUSTOMER_ID}"
+  ensureGitSecretExists "git-source-builder-key-dev" "${PROJECT_NAME}-dev" "${CUSTOMER_ID}"
 fi
 
 if [[ "${ENABLE_QA}" == true ]]; then

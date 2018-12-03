@@ -27,7 +27,7 @@ CUSTOMER_ID="${ID}"
 PROJECT_NAME="${CUSTOMER_ID}-${ORIGNAL_PROJECT_NAME}"
 # Replace spaces with -
 PROJECT_NAME="$(echo ${PROJECT_NAME} | sed 's/ \+/-/g')"
-PATH_ORIGNAL_PROJECT_NAME="$(echo ${ORIGNAL_PROJECT_NAME} | sed 's/ \+/-/g')"
+PATH_ORIGINAL_PROJECT_NAME="$(echo ${ORIGNAL_PROJECT_NAME} | sed 's/ \+/-/g')"
 ORIGNAL_PROJECT_NAME="$(echo ${ORIGNAL_PROJECT_NAME} | sed 's/ \+/-/g')"
 
 
@@ -181,10 +181,10 @@ function ensureUserInGroup() {
 
 function addProjectToGit() {
   unset COMMAND
-  THIS_PATH_ORIGNAL_PROJECT_NAME="${1}"
+  THIS_PATH_ORIGINAL_PROJECT_NAME="${1}"
   COMMAND="http --print=b POST https://${GIT_DOMAIN}/api/v4/projects \
      name=='${DISPLAY_NAME}' \
-     path==${THIS_PATH_ORIGNAL_PROJECT_NAME} \
+     path==${THIS_PATH_ORIGINAL_PROJECT_NAME} \
      namespace_id==${GROUP_ID} \
      visibility==private \
      lfs_enabled==false \
@@ -195,16 +195,16 @@ function addProjectToGit() {
 }
 
 function ensureProjectExists() {
-  THIS_PATH_ORIGNAL_PROJECT_NAME="${1}"
+  THIS_PATH_ORIGINAL_PROJECT_NAME="${1}"
   THIS_DISPLAY_NAME="${2}"
-  COMMAND="http --print=b GET https://${GIT_DOMAIN}/api/v4/projects search==${THIS_PATH_ORIGNAL_PROJECT_NAME} PRIVATE-TOKEN:${GIT_TOKEN}"
+  COMMAND="http --print=b GET https://${GIT_DOMAIN}/api/v4/projects search==${THIS_PATH_ORIGINAL_PROJECT_NAME} PRIVATE-TOKEN:${GIT_TOKEN}"
   POLL_FOR_PROJECT=$(eval ${COMMAND})
   if [[ "${POLL_FOR_PROJECT}" != "[]" ]]; then
     PROJECT_ID=$(echo ${POLL_FOR_PROJECT} | jq -r ".[0].id")
-    outputMode "The project '${THIS_PATH_ORIGNAL_PROJECT_NAME}' already exists. Skipping..."
+    outputMode "The project '${THIS_PATH_ORIGINAL_PROJECT_NAME}' already exists. Skipping..."
   else
     outputMode "Adding project ${THIS_DISPLAY_NAME}."
-    addProjectToGit "${THIS_PATH_ORIGNAL_PROJECT_NAME}"
+    addProjectToGit "${THIS_PATH_ORIGINAL_PROJECT_NAME}"
     ADD_PROJECT_RESPONSE=$?
     [[ ${ADD_PROJECT_RESPONSE} ]] && outputMode "Added the Project '${THIS_DISPLAY_NAME}'"; return || errorExit "Unable to add Project ${THIS_DISPLAY_NAME}."
   fi
@@ -214,13 +214,65 @@ function ensureProjectExists() {
 
 
 
+function createGitDeployKey() {
+  unset COMMAND
+  THIS_PROJECT_ID="${1}"
+  THIS_SECRET="${2}"
+  THIS_PROJECT_NAMESPACE="${3}"
+  ocLogin
+  THIS_SECRET_PUBLIC_KEY=$(oc get secrets git-source-builder-key -o=jsonpath='{.data.ssh-publickey}' -n ${THIS_PROJECT_NAMESPACE} | base64 -d)
+  COMMAND="http --print=b POST https://${GIT_DOMAIN}/api/v4/projects/${THIS_PROJECT_ID}/deploy_keys  \
+     title==${THIS_SECRET} \
+     key==${THIS_SECRET_PUBLIC_KEY} \
+     can_push==false \
+     PRIVATE-TOKEN:${GIT_TOKEN}"
+   COMMAND_RESPONSE=$(eval ${COMMAND})
+   CREATION_DATE="$(echo ${COMMAND_RESPONSE} | jq -r .created_at)"
+}
+
+function ensureGitDeployKey() {
+  THIS_PROJECT_ID="${1}"
+  THIS_SECRET="${2}"
+  THIS_PROJECT_NAMESPACE="${3}"
+  COMMAND="http --print=b GET https://${GIT_DOMAIN}/api/v4/projects/${THIS_PROJECT_ID}/deploy_keys PRIVATE-TOKEN:${GIT_TOKEN}"
+  POLL_FOR_DEPLOY_KEYS=$(eval ${COMMAND})
+  THIS_DEPLOY_KEY_ID=$(echo ${POLL_FOR_DEPLOY-KEYS} | jq -r '.[] | select(.title=="${THIS_SECRET}") | .id')
+  if [[ "${THIS_DEPLOY_KEY_ID}" != "" ]]; then
+    outputMode "The deployment key ${THIS_SECRET} already exists. Skipping..."
+  else
+    outputMode "Creating new deploy key: ${THIS_SECRET}"
+    createGitDeployKey "${THIS_PROJECT_ID}" "${THIS_SECRET}" "${THIS_PROJECT_NAMESPACE}"
+    CREATE_DEPLOY_KEY_RESPONSE=$?
+    [[ ${CREATE_DEPLOY_KEY_RESPONSE} ]] && outputMode "Created deploy key '${THIS_SECRET}'"; return || errorExit "Unable to create deploy key ${THIS_SECRET}"
+  fi
+}
+
+
+
+
+
+
+
 
 ensureGitAdminUserExists "${ADMIN_USER}"
 ensureGitGroupExists "${CUSTOMER_ID}"
 ensureUserInGroup "${ADMIN_ID}" "${GROUP_ID}"
-ensureProjectExists "${PATH_ORIGNAL_PROJECT_NAME}" "${DISPLAY_NAME}"
+ensureProjectExists "${PATH_ORIGINAL_PROJECT_NAME}" "${DISPLAY_NAME}"
 
 
+if [[ "${ENABLE_DEV}" == true ]]; then
+  ensureGitDeployKey "${PROJECT_ID}" "git-source-builder-key-dev" "${PATH_ORIGINAL_PROJECT_NAME}"
+fi
+
+
+if [[ "${ENABLE_QA}" == true ]]; then
+  outputMode "QA is enabled"
+fi
+
+
+if [[ "${ENABLE_PROD}" == true ]]; then
+  outputMode "PROD is enabled"
+fi
 
 
 outputMode "Done Git stuff"
