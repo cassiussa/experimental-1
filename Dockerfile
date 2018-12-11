@@ -51,7 +51,7 @@ WORKDIR /var/www/html/
 EXPOSE 8080
 USER 1001
 
-# Start up apapche and specify the configuration location
+# Start up apache et al
 #ENTRYPOINT ["/usr/sbin/httpd"]
-CMD ["/usr/sbin/httpd", "-D", "FOREGROUND", "-f", "/etc/httpd/conf/httpd.conf", "&&", "bash", "/tmp/fix-script.sh"]
+CMD ["/bin/"bash", "/tmp/fix-script.sh"]
 

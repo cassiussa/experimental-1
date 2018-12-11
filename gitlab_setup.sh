@@ -267,13 +267,13 @@ ensureProjectExists "${PATH_ORIGINAL_PROJECT_NAME}" "${DISPLAY_NAME}"
 
 
 if [[ "${ENABLE_DEV}" == true ]]; then
-  ensureGitDeployKey "${PROJECT_ID}" "git-source-builder-key-dev" "${CUSTOMER_ID}-${PATH_ORIGINAL_PROJECT_NAME}-dev"
+  ensureGitDeployKey "${PROJECT_ID}" "builder-key-dev" "${CUSTOMER_ID}-${PATH_ORIGINAL_PROJECT_NAME}-dev"
 fi
 
 
 if [[ "${ENABLE_QA}" == true ]]; then
   outputMode "QA is enabled"
-  ensureGitDeployKey "${PROJECT_ID}" "git-source-builder-key-qa" "${CUSTOMER_ID}-${PATH_ORIGINAL_PROJECT_NAME}-qa"
+  ensureGitDeployKey "${PROJECT_ID}" "builder-key-qa" "${CUSTOMER_ID}-${PATH_ORIGINAL_PROJECT_NAME}-qa"
 fi
 
 
