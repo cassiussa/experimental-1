@@ -53,5 +53,5 @@ USER 1001
 
 # Start up apache et al
 #ENTRYPOINT ["/usr/sbin/httpd"]
-CMD ["/bin/"bash", "/tmp/fix-script.sh"]
+CMD ["/bin/bash", "/tmp/fix-script.sh"]
 
